@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"fmt"
+
 	"github.com/luispcosta/go-tt/persistence"
 	"github.com/spf13/cobra"
 )
@@ -13,7 +15,8 @@ func NewListCommand(activityRepo persistence.ActivityRepository) *cobra.Command 
 		Long:  "Lists all the current registered activities in the system",
 		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
-
+			activities := activityRepo.List()
+			fmt.Println(activities)
 		},
 	}
 	return listCmd

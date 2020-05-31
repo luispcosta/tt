@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/luispcosta/go-tt/configuration"
+
 	"github.com/luispcosta/go-tt/persistence"
 	"github.com/spf13/cobra"
 )
@@ -20,7 +22,8 @@ var rootCmd = &cobra.Command{
 
 // Execute executes the root commmand.
 func Execute() {
-	repo := persistence.NewJSONActivityRepository()
+	config := configuration.NewConfig()
+	repo := persistence.NewJSONActivityRepository(*config)
 	errorInitRepo := repo.Initialize()
 
 	if errorInitRepo != nil {
@@ -29,6 +32,7 @@ func Execute() {
 	}
 
 	rootCmd.AddCommand(NewAddCommand(repo))
+	rootCmd.AddCommand(NewListCommand(repo))
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
