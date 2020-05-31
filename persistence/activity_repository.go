@@ -6,4 +6,5 @@ import "github.com/luispcosta/go-tt/core"
 type ActivityRepository interface {
 	Initialize() error
 	Update(core.Activity) error
+	List() []core.Activity
 }

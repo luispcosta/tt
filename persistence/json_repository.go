@@ -3,35 +3,45 @@ package persistence
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"log"
 	"os"
+	"path/filepath"
 
 	"github.com/luispcosta/go-tt/configuration"
 	"github.com/luispcosta/go-tt/core"
 	"github.com/luispcosta/go-tt/utils"
 )
 
-var config = configuration.NewConfig()
-
-const dataFolder = "data"
-
 // JSONActivityRepository is an implementation of the activity repository that stores activities as json data.
 type JSONActivityRepository struct {
-	DataLocation string
+	Config     configuration.Config
+	DataFolder string
 }
 
 // NewJSONActivityRepository initializes a new json repository
-func NewJSONActivityRepository() *JSONActivityRepository {
+func NewJSONActivityRepository(config configuration.Config) *JSONActivityRepository {
 	repo := JSONActivityRepository{
-		DataLocation: fmt.Sprintf(dataFolder),
+		Config:     config,
+		DataFolder: "data",
+	}
+	return &repo
+}
+
+// NewCustomJSONActivityRepository initializes a new json repository where the data lives in a custom folder.
+func NewCustomJSONActivityRepository(folder string, config configuration.Config) *JSONActivityRepository {
+	repo := JSONActivityRepository{
+		Config:     config,
+		DataFolder: folder,
 	}
 	return &repo
 }
 
 // Initialize initializes the json repository by creating the data location folder if it doesn't exist.
 func (repo *JSONActivityRepository) Initialize() error {
-	_, err := os.Stat(config.UserDataLocation + repo.DataLocation)
+	_, err := os.Stat(repo.Config.UserDataLocation + repo.DataFolder)
 	if os.IsNotExist(err) {
-		errCreating := utils.CreateDir(config.UserDataLocation + repo.DataLocation)
+		errCreating := utils.CreateDir(repo.Config.UserDataLocation + repo.DataFolder)
 
 		if errCreating != nil {
 			return errCreating
@@ -53,6 +63,44 @@ func (repo *JSONActivityRepository) Update(activity core.Activity) error {
 		return err
 	}
 
-	path := fmt.Sprintf("%s%s%s.json", config.UserDataLocation+repo.DataLocation, string(os.PathSeparator), activity.Name)
+	path := fmt.Sprintf("%s%s%s.json", repo.Config.UserDataLocation+repo.DataFolder, string(os.PathSeparator), activity.Name)
 	return utils.WriteToFile(path, bytes)
+}
+
+// List returns all activities currently registered in the system.
+func (repo *JSONActivityRepository) List() []core.Activity {
+	var activities []core.Activity
+	var readingErrors []string
+
+	folder := fmt.Sprintf("%s", repo.Config.UserDataLocation+repo.DataFolder)
+
+	filepath.Walk(folder, func(path string, info os.FileInfo, err error) error {
+		if !info.IsDir() && filepath.Ext(path) == ".json" {
+			shouldIgnoreFile := false
+			fileData, errRead := ioutil.ReadFile(path)
+			if errRead != nil {
+				readingErrors = append(readingErrors, fmt.Sprintf("Could not read data from file %s - error: %s", path, errRead))
+				shouldIgnoreFile = true
+			}
+			activity := core.Activity{}
+			errUnmarshall := json.Unmarshal([]byte(fileData), &activity)
+			if errUnmarshall != nil {
+				readingErrors = append(readingErrors, fmt.Sprintf("Could not load json data from file %s - error: %s", path, errUnmarshall))
+				shouldIgnoreFile = true
+			}
+
+			if !shouldIgnoreFile {
+				activities = append(activities, activity)
+			}
+		}
+		return nil
+	})
+
+	if len(readingErrors) > 0 {
+		for _, err := range readingErrors {
+			log.Printf("WARN: %s", err)
+		}
+	}
+
+	return activities
 }
