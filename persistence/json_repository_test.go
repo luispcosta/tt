@@ -3,6 +3,7 @@ package persistence
 import (
 	"fmt"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/luispcosta/go-tt/configuration"
@@ -28,7 +29,7 @@ func assertConfigurationFolderExists(t *testing.T) {
 
 func assertActivityFileExists(activity core.Activity, t *testing.T) {
 	assertConfigurationFolderExists(t)
-	expectedPath := fmt.Sprintf("%s%s.gott%s%s%s%s.json", utils.HomeDir(), string(os.PathSeparator), string(os.PathSeparator), testDataFolder, string(os.PathSeparator), activity.Name)
+	expectedPath := fmt.Sprintf("%s%s.gott%s%s%s%s.json", utils.HomeDir(), string(os.PathSeparator), string(os.PathSeparator), testDataFolder, string(os.PathSeparator), strings.ToLower(activity.Name))
 	folderExists, err := utils.PathExists(expectedPath)
 	if err != nil {
 		t.Fatal(err)
@@ -269,6 +270,28 @@ func TestDeleteActivitiesWhenActivityDoesNotExist(t *testing.T) {
 
 	if errDelete == nil {
 		t.Fatalf("Should have failed deleting an activity that does not exist")
+	}
+	defer clearTestFolder()
+}
+
+func TestDeleteActivitiesWhenActivityNameDoesntMatchCase(t *testing.T) {
+	config := configuration.NewConfig()
+	repo := NewCustomJSONActivityRepository(testDataFolder, *config)
+	err := repo.Initialize()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	activity1 := core.Activity{Name: "ACT", Alias: ""}
+	errActivity1 := repo.Update(activity1)
+	if errActivity1 != nil {
+		t.Fatal("Should not have failed creating a valid activity")
+	}
+
+	errDelete := repo.Delete("aCt")
+
+	if errDelete != nil {
+		t.Fatalf("Should not have failed deleting an activity ignoring case")
 	}
 	defer clearTestFolder()
 }

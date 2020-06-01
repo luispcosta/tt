@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/luispcosta/go-tt/persistence"
 	"github.com/spf13/cobra"
@@ -13,7 +14,7 @@ func NewDeleteCommand(activityRepo persistence.ActivityRepository) *cobra.Comman
 	deleteCmd := &cobra.Command{
 		Use:   "del",
 		Short: "Deletes an activity",
-		Long:  "Deletes an activity, if it exists, via its name.",
+		Long:  "Deletes an activity, if it exists, via its name (case insensitive).",
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			activityName := args[0]
@@ -22,7 +23,7 @@ func NewDeleteCommand(activityRepo persistence.ActivityRepository) *cobra.Comman
 				fmt.Println(errDelete)
 				os.Exit(1)
 			} else {
-				fmt.Printf("Activity %s deleted\n", activityName)
+				fmt.Printf("Activity %s deleted\n", strings.ToLower(activityName))
 			}
 		},
 	}

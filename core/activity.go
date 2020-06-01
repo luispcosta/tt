@@ -3,6 +3,7 @@ package core
 import (
 	"errors"
 	"regexp"
+	"strings"
 )
 
 // Activity represents an activity done by the user is some point in time
@@ -22,5 +23,6 @@ func (activity *Activity) ValidateName() error {
 	if !re.MatchString(activity.Name) {
 		return errors.New("Activity name is not valid. It must only contain alpha numeric characters")
 	}
+	activity.Name = strings.ToLower(activity.Name)
 	return nil
 }

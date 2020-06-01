@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/luispcosta/go-tt/configuration"
 	"github.com/luispcosta/go-tt/core"
@@ -64,7 +65,7 @@ func (repo *JSONActivityRepository) Update(activity core.Activity) error {
 		return err
 	}
 
-	path := fmt.Sprintf("%s%s%s.json", repo.Config.UserDataLocation+repo.DataFolder, string(os.PathSeparator), activity.Name)
+	path := fmt.Sprintf("%s%s%s.json", repo.Config.UserDataLocation+repo.DataFolder, string(os.PathSeparator), strings.ToLower(activity.Name))
 	return utils.WriteToFile(path, bytes)
 }
 
@@ -108,12 +109,12 @@ func (repo *JSONActivityRepository) List() []core.Activity {
 
 // Delete deletes an activity via a name (that needs to match a file name). If the files was deleted with success, then no error is returned.
 func (repo *JSONActivityRepository) Delete(activityName string) error {
-	activityFilePath := fmt.Sprintf("%s%s%s.json", repo.Config.UserDataLocation+repo.DataFolder, string(os.PathSeparator), activityName)
+	activityFilePath := fmt.Sprintf("%s%s%s.json", repo.Config.UserDataLocation+repo.DataFolder, string(os.PathSeparator), strings.ToLower(activityName))
 	exists, _ := utils.PathExists(activityFilePath)
 	if exists {
 		errDelete := utils.DeleteAtPath(activityFilePath)
 		return errDelete
-	} else {
-		return errors.New("Activity not registered")
 	}
+
+	return errors.New("Activity not registered")
 }
