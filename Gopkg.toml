@@ -32,3 +32,4 @@
 [[constraint]]
   name = "github.com/spf13/cobra"
   source = "github.com/spf13/cobra"
+  version = "v1.0.0"
