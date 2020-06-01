@@ -46,3 +46,8 @@ func HomeDir() string {
 
 	return usr.HomeDir
 }
+
+// DeleteAtPath tries to delete a file given a path
+func DeleteAtPath(path string) error {
+	return os.Remove(path)
+}

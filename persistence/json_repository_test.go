@@ -228,3 +228,47 @@ func TestListActivitiesWhenFolderContainsAnUnexpectedFileType(t *testing.T) {
 	}
 	defer clearTestFolder()
 }
+
+func TestDeleteActivitiesWhenActivityExists(t *testing.T) {
+	config := configuration.NewConfig()
+	repo := NewCustomJSONActivityRepository(testDataFolder, *config)
+	err := repo.Initialize()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	activity1 := core.Activity{Name: "act1", Alias: ""}
+	errActivity1 := repo.Update(activity1)
+	if errActivity1 != nil {
+		t.Fatal("Should not have failed creating a valid activity")
+	}
+
+	errDelete := repo.Delete(activity1.Name)
+
+	if errDelete != nil {
+		t.Fatalf("Should not have failed deleting an activity that is registered. Failed with %s", errDelete.Error())
+	}
+	defer clearTestFolder()
+}
+
+func TestDeleteActivitiesWhenActivityDoesNotExist(t *testing.T) {
+	config := configuration.NewConfig()
+	repo := NewCustomJSONActivityRepository(testDataFolder, *config)
+	err := repo.Initialize()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	activity1 := core.Activity{Name: "act1", Alias: ""}
+	errActivity1 := repo.Update(activity1)
+	if errActivity1 != nil {
+		t.Fatal("Should not have failed creating a valid activity")
+	}
+
+	errDelete := repo.Delete("xxx")
+
+	if errDelete == nil {
+		t.Fatalf("Should have failed deleting an activity that does not exist")
+	}
+	defer clearTestFolder()
+}

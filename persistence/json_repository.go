@@ -2,6 +2,7 @@ package persistence
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -103,4 +104,16 @@ func (repo *JSONActivityRepository) List() []core.Activity {
 	}
 
 	return activities
+}
+
+// Delete deletes an activity via a name (that needs to match a file name). If the files was deleted with success, then no error is returned.
+func (repo *JSONActivityRepository) Delete(activityName string) error {
+	activityFilePath := fmt.Sprintf("%s%s%s.json", repo.Config.UserDataLocation+repo.DataFolder, string(os.PathSeparator), activityName)
+	exists, _ := utils.PathExists(activityFilePath)
+	if exists {
+		errDelete := utils.DeleteAtPath(activityFilePath)
+		return errDelete
+	} else {
+		return errors.New("Activity not registered")
+	}
 }
