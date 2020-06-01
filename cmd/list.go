@@ -16,7 +16,14 @@ func NewListCommand(activityRepo persistence.ActivityRepository) *cobra.Command 
 		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
 			activities := activityRepo.List()
-			fmt.Println(activities)
+			for _, act := range activities {
+				if act.Alias != "" {
+					fmt.Printf("%s (%s)\n", act.Name, act.Alias)
+				} else {
+					fmt.Printf("%s\n", act.Name)
+				}
+
+			}
 		},
 	}
 	return listCmd
