@@ -5,6 +5,7 @@ import (
 	"os"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/luispcosta/go-tt/configuration"
 
@@ -14,6 +15,7 @@ import (
 )
 
 const testDataFolder = "test"
+const logTestFolder = "logTest"
 
 func assertConfigurationFolderExists(t *testing.T) {
 	expectedPath := fmt.Sprintf("%s%s.gott%s%s", utils.HomeDir(), string(os.PathSeparator), string(os.PathSeparator), testDataFolder)
@@ -40,6 +42,21 @@ func assertActivityFileExists(activity core.Activity, t *testing.T) {
 	}
 }
 
+func assertActivityLogFileExistsCurrentDay(t *testing.T) {
+	year := time.Now().Year()
+	month := time.Now().Month()
+	day := time.Now().Day()
+	expectedPath := fmt.Sprintf("%s%s.gott%s%s%s%v%s%v%s%v.json", utils.HomeDir(), string(os.PathSeparator), string(os.PathSeparator), logTestFolder, string(os.PathSeparator), year, string(os.PathSeparator), int(month), string(os.PathSeparator), day)
+	folderExists, err := utils.PathExists(expectedPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !folderExists {
+		t.Fatal(fmt.Sprintf("Expected activity log file path %s to exist", expectedPath))
+	}
+}
+
 func clearTestFolder() {
 	path := fmt.Sprintf("%s%s.gott%s%s", utils.HomeDir(), string(os.PathSeparator), string(os.PathSeparator), testDataFolder)
 	err := os.RemoveAll(path)
@@ -49,9 +66,18 @@ func clearTestFolder() {
 	}
 }
 
+func clearLogTestFolder() {
+	path := fmt.Sprintf("%s%s.gott%s%s", utils.HomeDir(), string(os.PathSeparator), string(os.PathSeparator), logTestFolder)
+	err := os.RemoveAll(path)
+	if err != nil {
+		fmt.Printf("Could not delete log test folder %s with error %s", path, err.Error())
+		os.Exit(-1)
+	}
+}
+
 func TestInitializeWhenNoConfigurationExists(t *testing.T) {
 	config := configuration.NewConfig()
-	repo := NewCustomJSONActivityRepository(testDataFolder, *config)
+	repo := NewCustomJSONActivityRepository(testDataFolder, logTestFolder, *config)
 	err := repo.Initialize()
 	if err != nil {
 		t.Fatal(err)
@@ -63,7 +89,7 @@ func TestInitializeWhenNoConfigurationExists(t *testing.T) {
 func TestInitializeWhenConfigFolderExists(t *testing.T) {
 	utils.CreateDir(fmt.Sprintf("%s%s.gott%s", utils.HomeDir(), string(os.PathSeparator), string(os.PathSeparator)))
 	config := configuration.NewConfig()
-	repo := NewCustomJSONActivityRepository(testDataFolder, *config)
+	repo := NewCustomJSONActivityRepository(testDataFolder, logTestFolder, *config)
 	err := repo.Initialize()
 	if err != nil {
 		t.Fatal(err)
@@ -76,7 +102,7 @@ func TestInitializeWhenConfigFolderExists(t *testing.T) {
 func TestInitializeWhenDataFolderExists(t *testing.T) {
 	utils.CreateDir(fmt.Sprintf("%s%s.gott%sdata", utils.HomeDir(), string(os.PathSeparator), string(os.PathSeparator)))
 	config := configuration.NewConfig()
-	repo := NewCustomJSONActivityRepository(testDataFolder, *config)
+	repo := NewCustomJSONActivityRepository(testDataFolder, logTestFolder, *config)
 	err := repo.Initialize()
 	if err != nil {
 		t.Fatal(err)
@@ -87,7 +113,7 @@ func TestInitializeWhenDataFolderExists(t *testing.T) {
 
 func TestUpdateActivityWhenActivityFileDoesNotExist(t *testing.T) {
 	config := configuration.NewConfig()
-	repo := NewCustomJSONActivityRepository(testDataFolder, *config)
+	repo := NewCustomJSONActivityRepository(testDataFolder, logTestFolder, *config)
 	err := repo.Initialize()
 	if err != nil {
 		t.Fatal(err)
@@ -119,7 +145,7 @@ func TestUpdateActivityWhenActivityFileExists(t *testing.T) {
 	}
 
 	config := configuration.NewConfig()
-	repo := NewCustomJSONActivityRepository(testDataFolder, *config)
+	repo := NewCustomJSONActivityRepository(testDataFolder, logTestFolder, *config)
 	err := repo.Initialize()
 	if err != nil {
 		t.Fatal(err)
@@ -136,7 +162,7 @@ func TestUpdateActivityWhenActivityFileExists(t *testing.T) {
 
 func TestListActivitiesWhenFolderContainsActivities(t *testing.T) {
 	config := configuration.NewConfig()
-	repo := NewCustomJSONActivityRepository(testDataFolder, *config)
+	repo := NewCustomJSONActivityRepository(testDataFolder, logTestFolder, *config)
 	err := repo.Initialize()
 	if err != nil {
 		t.Fatal(err)
@@ -164,7 +190,7 @@ func TestListActivitiesWhenFolderContainsActivities(t *testing.T) {
 
 func TestListActivitiesWhenFolderIsEmpty(t *testing.T) {
 	config := configuration.NewConfig()
-	repo := NewCustomJSONActivityRepository(testDataFolder, *config)
+	repo := NewCustomJSONActivityRepository(testDataFolder, logTestFolder, *config)
 	err := repo.Initialize()
 	if err != nil {
 		t.Fatal(err)
@@ -180,7 +206,7 @@ func TestListActivitiesWhenFolderIsEmpty(t *testing.T) {
 
 func TestListActivitiesWhenFolderContainsAnUnexpectedJsonFile(t *testing.T) {
 	config := configuration.NewConfig()
-	repo := NewCustomJSONActivityRepository(testDataFolder, *config)
+	repo := NewCustomJSONActivityRepository(testDataFolder, logTestFolder, *config)
 	err := repo.Initialize()
 	if err != nil {
 		t.Fatal(err)
@@ -206,7 +232,7 @@ func TestListActivitiesWhenFolderContainsAnUnexpectedJsonFile(t *testing.T) {
 
 func TestListActivitiesWhenFolderContainsAnUnexpectedFileType(t *testing.T) {
 	config := configuration.NewConfig()
-	repo := NewCustomJSONActivityRepository(testDataFolder, *config)
+	repo := NewCustomJSONActivityRepository(testDataFolder, logTestFolder, *config)
 	err := repo.Initialize()
 	if err != nil {
 		t.Fatal(err)
@@ -232,7 +258,7 @@ func TestListActivitiesWhenFolderContainsAnUnexpectedFileType(t *testing.T) {
 
 func TestDeleteActivitiesWhenActivityExists(t *testing.T) {
 	config := configuration.NewConfig()
-	repo := NewCustomJSONActivityRepository(testDataFolder, *config)
+	repo := NewCustomJSONActivityRepository(testDataFolder, logTestFolder, *config)
 	err := repo.Initialize()
 	if err != nil {
 		t.Fatal(err)
@@ -254,7 +280,7 @@ func TestDeleteActivitiesWhenActivityExists(t *testing.T) {
 
 func TestDeleteActivitiesWhenActivityDoesNotExist(t *testing.T) {
 	config := configuration.NewConfig()
-	repo := NewCustomJSONActivityRepository(testDataFolder, *config)
+	repo := NewCustomJSONActivityRepository(testDataFolder, logTestFolder, *config)
 	err := repo.Initialize()
 	if err != nil {
 		t.Fatal(err)
@@ -276,7 +302,7 @@ func TestDeleteActivitiesWhenActivityDoesNotExist(t *testing.T) {
 
 func TestDeleteActivitiesWhenActivityNameDoesntMatchCase(t *testing.T) {
 	config := configuration.NewConfig()
-	repo := NewCustomJSONActivityRepository(testDataFolder, *config)
+	repo := NewCustomJSONActivityRepository(testDataFolder, logTestFolder, *config)
 	err := repo.Initialize()
 	if err != nil {
 		t.Fatal(err)
@@ -294,4 +320,30 @@ func TestDeleteActivitiesWhenActivityNameDoesntMatchCase(t *testing.T) {
 		t.Fatalf("Should not have failed deleting an activity ignoring case")
 	}
 	defer clearTestFolder()
+}
+
+func TestStartActivity(t *testing.T) {
+	config := configuration.NewConfig()
+	repo := NewCustomJSONActivityRepository(testDataFolder, logTestFolder, *config)
+	err := repo.Initialize()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	activity1 := core.Activity{Name: "ACT", Alias: ""}
+	errActivity1 := repo.Update(activity1)
+	if errActivity1 != nil {
+		t.Fatal("Should not have failed creating a valid activity")
+	}
+
+	repo.Start(activity1)
+	assertActivityLogFileExistsCurrentDay(t)
+
+	activityData, err := repo.Find(activity1.Name)
+	if err != nil {
+		t.Fatal("Should not have failed to find activity that was created before")
+	}
+
+	defer clearTestFolder()
+	defer clearLogTestFolder()
 }

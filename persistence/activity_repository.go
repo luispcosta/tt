@@ -7,5 +7,7 @@ type ActivityRepository interface {
 	Initialize() error
 	Update(core.Activity) error
 	List() []core.Activity
-	Delete(name string) error
+	Delete(string) error
+	Start(core.Activity) error
+	Find(string) (*core.Activity, error)
 }
