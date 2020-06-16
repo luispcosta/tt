@@ -18,7 +18,7 @@ func NewStartCommand(activityRepo persistence.ActivityRepository) *cobra.Command
 			activityName := args[0]
 			activity, err := activityRepo.Find(activityName)
 			if err != nil {
-				fmt.Printf("Could find activity with name %s - error: %s", activityName, err.Error())
+				fmt.Printf("Could not find activity with name %s - error: %s", activityName, err.Error())
 			}
 			errStart := activityRepo.Start(*activity)
 			if errStart != nil {

@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -197,7 +198,7 @@ func (repo *JSONActivityRepository) Start(activity core.Activity) error {
 
 		logs := dayLog[activity.Name]
 		log := core.ActivityLog{}
-		log.Start = time.Now().String()
+		log.Start = strconv.FormatInt(time.Now().Unix(), 10)
 
 		logs = append(logs, log)
 		dayLog[activity.Name] = logs
@@ -214,7 +215,7 @@ func (repo *JSONActivityRepository) Start(activity core.Activity) error {
 		}
 	} else {
 		log := core.ActivityLog{}
-		log.Start = time.Now().String()
+		log.Start = strconv.FormatInt(time.Now().Unix(), 10)
 		dayLog := make(core.ActivityDayLog)
 		dayLog[activity.Name] = []core.ActivityLog{log}
 		bytes, err := json.Marshal(dayLog)
