@@ -339,9 +339,18 @@ func TestStartActivity(t *testing.T) {
 	repo.Start(activity1)
 	assertActivityLogFileExistsCurrentDay(t)
 
-	activityData, err := repo.Find(activity1.Name)
-	if err != nil {
+	_, errFind := repo.Find(activity1.Name)
+	if errFind != nil {
 		t.Fatal("Should not have failed to find activity that was created before")
+	}
+
+	activityDayLog, errDayLog := repo.FindLogsForDay(time.Now())
+	if errDayLog != nil {
+		t.Fatal("Should have created one activity day log after starting an activity")
+	}
+
+	if activityDayLog[activity1.Name] == nil {
+		t.Fatal("Should have created a log entry for activity after starting it")
 	}
 
 	defer clearTestFolder()

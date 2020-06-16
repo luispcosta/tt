@@ -152,12 +152,35 @@ func (repo *JSONActivityRepository) Find(activityName string) (*core.Activity, e
 	return nil, errors.New("Activity does not exist")
 }
 
+// FindLogsForDay returns a day log file for the given date if it exists
+func (repo *JSONActivityRepository) FindLogsForDay(day time.Time) (core.ActivityDayLog, error) {
+	logFilePath := repo.dayLogFilePath(day)
+	exists, _ := utils.PathExists(logFilePath)
+	if exists {
+		dayLog := core.ActivityDayLog{}
+		fileData, errRead := ioutil.ReadFile(logFilePath)
+		if errRead != nil {
+			return nil, errRead
+		}
+
+		errUnmarshall := json.Unmarshal([]byte(fileData), &dayLog)
+
+		if errUnmarshall != nil {
+			return nil, errUnmarshall
+		}
+
+		return dayLog, nil
+	}
+
+	return nil, errors.New("Activity Log does not exist")
+}
+
 // Start sets the start time of an activity
 func (repo *JSONActivityRepository) Start(activity core.Activity) error {
-	year := time.Now().Year()
-	month := time.Now().Month()
-	day := time.Now().Day()
-	logFilePath := fmt.Sprintf("%s%s%v%s%v%s%v.json", repo.Config.UserDataLocation+repo.LogFolder, string(os.PathSeparator), year, string(os.PathSeparator), int(month), string(os.PathSeparator), day)
+	instant := time.Now()
+	year := instant.Year()
+	month := instant.Month()
+	logFilePath := repo.dayLogFilePath(instant)
 	exists, _ := utils.PathExists(logFilePath)
 	if exists {
 		dayLog := core.ActivityDayLog{}
@@ -222,6 +245,14 @@ func (repo *JSONActivityRepository) Start(activity core.Activity) error {
 	}
 
 	return nil
+}
+
+func (repo *JSONActivityRepository) dayLogFilePath(date time.Time) string {
+	year := date.Year()
+	month := date.Month()
+	day := date.Day()
+	logFilePath := fmt.Sprintf("%s%s%v%s%v%s%v.json", repo.Config.UserDataLocation+repo.LogFolder, string(os.PathSeparator), year, string(os.PathSeparator), int(month), string(os.PathSeparator), day)
+	return logFilePath
 }
 
 func (repo *JSONActivityRepository) activityExists(activityName string) bool {

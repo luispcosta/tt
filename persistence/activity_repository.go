@@ -1,6 +1,10 @@
 package persistence
 
-import "github.com/luispcosta/go-tt/core"
+import (
+	"time"
+
+	"github.com/luispcosta/go-tt/core"
+)
 
 // ActivityRepository is the generic interface that exposes methods to create and read activities from a store.
 type ActivityRepository interface {
@@ -10,4 +14,5 @@ type ActivityRepository interface {
 	Delete(string) error
 	Start(core.Activity) error
 	Find(string) (*core.Activity, error)
+	FindLogsForDay(time.Time) (core.ActivityDayLog, error)
 }
