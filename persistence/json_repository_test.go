@@ -356,3 +356,178 @@ func TestStartActivity(t *testing.T) {
 	defer clearTestFolder()
 	defer clearLogTestFolder()
 }
+
+func TestStopActivityWhenActivityDoesNotExist(t *testing.T) {
+	config := configuration.NewConfig()
+	repo := NewCustomJSONActivityRepository(testDataFolder, logTestFolder, *config)
+	err := repo.Initialize()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	activity1 := core.Activity{Name: "ACT", Alias: ""}
+	errStop := repo.Stop(activity1)
+	if errStop == nil {
+		t.Fatal("Should have failed stopping an activity that does not exist")
+	}
+
+	defer clearTestFolder()
+	defer clearLogTestFolder()
+}
+
+func TestStopActivityWhenNoActivityHasNotBeenStartedYet(t *testing.T) {
+	config := configuration.NewConfig()
+	repo := NewCustomJSONActivityRepository(testDataFolder, logTestFolder, *config)
+	err := repo.Initialize()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	activity1 := core.Activity{Name: "ACT", Alias: ""}
+
+	errActivity1 := repo.Update(activity1)
+	if errActivity1 != nil {
+		t.Fatal("Should not have failed creating a valid activity")
+	}
+
+	errStop := repo.Stop(activity1)
+	if errStop == nil {
+		t.Fatal("Should have failed stopping an activity that hasn't been starrted yet")
+	}
+
+	if errStop.Error() != "No activity started yet today" {
+		t.Fatal("Error should have been: no activity started yet today")
+	}
+
+	defer clearTestFolder()
+	defer clearLogTestFolder()
+}
+
+func TestStopActivityWhenActivityHasNotBeenStartedYet(t *testing.T) {
+	defer clearTestFolder()
+	defer clearLogTestFolder()
+
+	config := configuration.NewConfig()
+	repo := NewCustomJSONActivityRepository(testDataFolder, logTestFolder, *config)
+	err := repo.Initialize()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	activity1 := core.Activity{Name: "ACT", Alias: ""}
+	activity2 := core.Activity{Name: "ACT2", Alias: ""}
+
+	errActivity1 := repo.Update(activity1)
+	if errActivity1 != nil {
+		t.Fatal("Should not have failed creating a valid activity")
+	}
+
+	errActivity2 := repo.Update(activity2)
+	if errActivity2 != nil {
+		t.Fatal("Should not have failed creating a valid activity")
+	}
+
+	repo.Start(activity2)
+	repo.Stop(activity2)
+
+	errStop := repo.Stop(activity1)
+	if errStop == nil {
+		t.Fatal("Should have failed stopping an activity that hasn't been starrted yet")
+	}
+
+	if errStop.Error() != "Activity not yet started" {
+		t.Fatal("Error should have been: Activity not yet started")
+	}
+}
+
+func TestStopActivityWhenActivityHasAlreadyBeenStopped(t *testing.T) {
+	defer clearTestFolder()
+	defer clearLogTestFolder()
+
+	config := configuration.NewConfig()
+	repo := NewCustomJSONActivityRepository(testDataFolder, logTestFolder, *config)
+	err := repo.Initialize()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	activity1 := core.Activity{Name: "ACT", Alias: ""}
+
+	errActivity1 := repo.Update(activity1)
+	if errActivity1 != nil {
+		t.Fatal("Should not have failed creating a valid activity")
+	}
+
+	repo.Start(activity1)
+	errInitialStop := repo.Stop(activity1)
+
+	if errInitialStop != nil {
+		t.Fatal("Should not have failed stopping activity")
+	}
+
+	errStop := repo.Stop(activity1)
+	if errStop == nil {
+		t.Fatal("Should have failed stopping an activity that hasn't been starrted yet")
+	}
+
+	if errStop.Error() != "Last activity has already been stoped. Please start a new one" {
+		t.Fatal("Error should have been: Last activity has already been stoped. Please start a new one")
+	}
+
+}
+
+func TestStopActivity(t *testing.T) {
+	defer clearTestFolder()
+	defer clearLogTestFolder()
+
+	config := configuration.NewConfig()
+	repo := NewCustomJSONActivityRepository(testDataFolder, logTestFolder, *config)
+	err := repo.Initialize()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	activity1 := core.Activity{Name: "ACT", Alias: ""}
+
+	errActivity1 := repo.Update(activity1)
+	if errActivity1 != nil {
+		t.Fatal("Should not have failed creating a valid activity")
+	}
+
+	repo.Start(activity1)
+	time.Sleep(1 * time.Second)
+	errInitialStop := repo.Stop(activity1)
+
+	if errInitialStop != nil {
+		t.Fatal("Should not have failed stopping activity")
+	}
+
+	activityDayLog, errDayLog := repo.FindLogsForDay(time.Now())
+	if errDayLog != nil {
+		t.Fatal("Should have created one activity day log after starting an activity")
+	}
+
+	if activityDayLog[activity1.Name] == nil {
+		t.Fatal("Should have created a log entry for activity after starting it")
+	}
+
+	if len(activityDayLog[activity1.Name]) != 1 {
+		t.Fatal("Should have only one activity log for activity started only once")
+	}
+
+	log := activityDayLog[activity1.Name][0]
+
+	if log.Start == "" {
+		t.Fatalf("Activity log Start field should have been filled after starting and stopping activity")
+	}
+
+	if log.End == "" {
+		t.Fatalf("Activity log End field should have been filled after starting and stopping activity")
+	}
+
+	if log.Duration == 0 {
+		t.Fatalf("Activity log Duration field should have been filled after starting and stopping activity")
+	}
+
+	fmt.Println(log.Duration)
+}

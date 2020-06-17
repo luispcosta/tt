@@ -248,6 +248,61 @@ func (repo *JSONActivityRepository) Start(activity core.Activity) error {
 	return nil
 }
 
+// Stop sets the end time for an activity
+func (repo *JSONActivityRepository) Stop(activity core.Activity) error {
+	instant := time.Now()
+	logFilePath := repo.dayLogFilePath(instant)
+	exists, _ := utils.PathExists(logFilePath)
+	if exists {
+		dayLog := core.ActivityDayLog{}
+		fileData, errRead := ioutil.ReadFile(logFilePath)
+		if errRead != nil {
+			return errRead
+		}
+
+		errUnmarshall := json.Unmarshal([]byte(fileData), &dayLog)
+
+		if errUnmarshall != nil {
+			return errUnmarshall
+		}
+
+		logs, logExistsForActivity := dayLog[activity.Name]
+
+		if logExistsForActivity {
+			lastEntry := logs[len(logs)-1]
+			if lastEntry.Start == "" {
+				return errors.New("Last activity start time was not recorded") // TODO: We should do something about this
+			} else if lastEntry.End != "" {
+				return errors.New("Last activity has already been stoped. Please start a new one")
+			} else {
+				lastEntry.End = strconv.FormatInt(time.Now().Unix(), 10)
+				duration, errCalcDuration := utils.CalcActivityLogDuration(lastEntry)
+				if errCalcDuration != nil {
+					return errCalcDuration
+				}
+				lastEntry.Duration = duration
+				logs[len(logs)-1] = lastEntry
+				dayLog[activity.Name] = logs
+				bytes, err := json.Marshal(dayLog)
+				if err != nil {
+					return nil
+				}
+
+				errWrite := utils.WriteToFile(logFilePath, bytes)
+				if errWrite != nil {
+					return errWrite
+				}
+			}
+		} else {
+			return errors.New("Activity not yet started")
+		}
+	} else {
+		return errors.New("No activity started yet today")
+	}
+
+	return nil
+}
+
 func (repo *JSONActivityRepository) dayLogFilePath(date time.Time) string {
 	year := date.Year()
 	month := date.Month()

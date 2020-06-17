@@ -13,6 +13,7 @@ type ActivityRepository interface {
 	List() []core.Activity
 	Delete(string) error
 	Start(core.Activity) error
+	Stop(core.Activity) error
 	Find(string) (*core.Activity, error)
 	FindLogsForDay(time.Time) (core.ActivityDayLog, error)
 }
