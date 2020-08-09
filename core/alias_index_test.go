@@ -34,8 +34,8 @@ func TestDeleteWhenMapDoesContainKeyButGivenBadCase(t *testing.T) {
 	}
 	aliasIndex.Load(data)
 	aliasIndex.Delete("kEy2")
-	if len(data) != 2 {
-		t.Error("Index should have remained with 2 keys")
+	if len(data) != 1 {
+		t.Error("Index should have been updated")
 	}
 }
 

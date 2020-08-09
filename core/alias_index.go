@@ -28,7 +28,7 @@ func (index *AliasIndex) Load(data AliasIndexData) {
 
 // Delete deletes an entry from the index
 func (index *AliasIndex) Delete(indexKey string) {
-	delete(index.Data, indexKey)
+	delete(index.Data, strings.ToLower(indexKey))
 }
 
 // IsIndexed returns true if the index map already contains the given key
