@@ -132,7 +132,8 @@ func TestInitializeWhenConfigFolderExists(t *testing.T) {
 }
 
 func TestInitializeWhenDataFolderExists(t *testing.T) {
-	utils.CreateDir(fmt.Sprintf("%s%s.gott%sdata", utils.HomeDir(), string(os.PathSeparator), string(os.PathSeparator)))
+	defer clearTestFolder()
+	utils.CreateDir(fmt.Sprintf("%s%s.gott%s%s", utils.HomeDir(), string(os.PathSeparator), string(os.PathSeparator), testDataFolder))
 	config := configuration.NewConfig()
 	repo := NewCustomJSONActivityRepository(testDataFolder, logTestFolder, *config)
 	err := repo.Initialize()
@@ -140,7 +141,6 @@ func TestInitializeWhenDataFolderExists(t *testing.T) {
 		t.Fatal(err)
 	}
 	assertConfigurationFolderExists(t)
-	defer clearTestFolder()
 }
 
 func TestUpdateActivityWhenActivityFileDoesNotExist(t *testing.T) {
@@ -162,25 +162,26 @@ func TestUpdateActivityWhenActivityFileDoesNotExist(t *testing.T) {
 }
 
 func TestUpdateActivityWhenActivityFileExists(t *testing.T) {
-	utils.CreateDir(fmt.Sprintf("%s%s.gott%sdata", utils.HomeDir(), string(os.PathSeparator), string(os.PathSeparator)))
-	activity := core.Activity{}
-	activity.Name = "a"
-
-	homeDir := fmt.Sprintf("%s%s.gott%sdata", utils.HomeDir(), string(os.PathSeparator), string(os.PathSeparator))
-
-	filePath := fmt.Sprintf("%s%s%s.json", homeDir, string(os.PathSeparator), activity.Name)
-	f, errCreate := os.Create(filePath)
-	defer f.Close()
-
-	if errCreate != nil {
-		t.Fatal(errCreate)
-	}
+	defer clearTestFolder()
 
 	config := configuration.NewConfig()
 	repo := NewCustomJSONActivityRepository(testDataFolder, logTestFolder, *config)
 	err := repo.Initialize()
 	if err != nil {
 		t.Fatal(err)
+	}
+
+	activity := core.Activity{}
+	activity.Name = "a"
+
+	dataFolder := fmt.Sprintf("%s%s.gott%s%s", utils.HomeDir(), string(os.PathSeparator), string(os.PathSeparator), testDataFolder)
+
+	filePath := fmt.Sprintf("%s%s%s.json", dataFolder, string(os.PathSeparator), activity.Name)
+	f, errCreate := os.Create(filePath)
+	defer f.Close()
+
+	if errCreate != nil {
+		t.Fatal(errCreate)
 	}
 
 	errUpdating := repo.Update(activity)
@@ -189,25 +190,10 @@ func TestUpdateActivityWhenActivityFileExists(t *testing.T) {
 	}
 
 	assertActivityFileExists(activity, t)
-	defer clearTestFolder()
 }
 
 func TestUpdateFirstActivityIndex(t *testing.T) {
 	defer clearTestFolder()
-	utils.CreateDir(fmt.Sprintf("%s%s.gott%sdata", utils.HomeDir(), string(os.PathSeparator), string(os.PathSeparator)))
-	activity := core.Activity{}
-	activity.Name = "activity1"
-	activity.Alias = "Hey"
-
-	homeDir := fmt.Sprintf("%s%s.gott%sdata", utils.HomeDir(), string(os.PathSeparator), string(os.PathSeparator))
-
-	filePath := fmt.Sprintf("%s%s%s.json", homeDir, string(os.PathSeparator), activity.Name)
-	f, errCreate := os.Create(filePath)
-	defer f.Close()
-
-	if errCreate != nil {
-		t.Fatal(errCreate)
-	}
 
 	config := configuration.NewConfig()
 	repo := NewCustomJSONActivityRepository(testDataFolder, logTestFolder, *config)
@@ -215,6 +201,10 @@ func TestUpdateFirstActivityIndex(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	activity := core.Activity{}
+	activity.Name = "activity1"
+	activity.Alias = "Hey"
 
 	errUpdating := repo.Update(activity)
 	if errUpdating != nil {
@@ -248,20 +238,6 @@ func TestUpdateFirstActivityIndex(t *testing.T) {
 
 func TestUpdateWhenAddingTwoActivitiesWithTheSameAlias(t *testing.T) {
 	defer clearTestFolder()
-	utils.CreateDir(fmt.Sprintf("%s%s.gott%sdata", utils.HomeDir(), string(os.PathSeparator), string(os.PathSeparator)))
-	activity := core.Activity{}
-	activity.Name = "activity1"
-	activity.Alias = "Hey"
-
-	homeDir := fmt.Sprintf("%s%s.gott%sdata", utils.HomeDir(), string(os.PathSeparator), string(os.PathSeparator))
-
-	filePath := fmt.Sprintf("%s%s%s.json", homeDir, string(os.PathSeparator), activity.Name)
-	f, errCreate := os.Create(filePath)
-	defer f.Close()
-
-	if errCreate != nil {
-		t.Fatal(errCreate)
-	}
 
 	config := configuration.NewConfig()
 	repo := NewCustomJSONActivityRepository(testDataFolder, logTestFolder, *config)
@@ -269,6 +245,10 @@ func TestUpdateWhenAddingTwoActivitiesWithTheSameAlias(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	activity := core.Activity{}
+	activity.Name = "activity1"
+	activity.Alias = "Hey"
 
 	errUpdating := repo.Update(activity)
 	if errUpdating != nil {
