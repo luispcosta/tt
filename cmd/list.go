@@ -17,12 +17,7 @@ func NewListCommand(activityRepo core.ActivityRepository) *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			activities := activityRepo.List()
 			for _, act := range activities {
-				if act.Alias != "" {
-					fmt.Printf("%s (%s)\n", act.Name, act.Alias)
-				} else {
-					fmt.Printf("%s\n", act.Name)
-				}
-
+				fmt.Println(act.ToPrintableString())
 			}
 		},
 	}

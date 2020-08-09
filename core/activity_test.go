@@ -44,6 +44,36 @@ func TestValidNameHasWithSpaces(t *testing.T) {
 	}
 }
 
+func TestValidateNameWhenReservedNameIsUsed(t *testing.T) {
+	activity := Activity{Name: "inDeX"}
+
+	err := activity.ValidateName()
+
+	if err == nil {
+		t.Fatal("Should have failed when using reserved names for activity name")
+	}
+}
+
+func TestValidateNameWhenNameHasDots(t *testing.T) {
+	activity := Activity{Name: "someActivity.json"}
+
+	err := activity.ValidateName()
+
+	if err == nil {
+		t.Fatal("Should have failed when using dots on activity name")
+	}
+}
+
+func TestValidateNameWhenNameHasBackSlashes(t *testing.T) {
+	activity := Activity{Name: "someActivity/other/"}
+
+	err := activity.ValidateName()
+
+	if err == nil {
+		t.Fatal("Should have failed when using slashes on activity name")
+	}
+}
+
 func TestValidNameHasWithCorrectChars(t *testing.T) {
 	activity := Activity{Name: "Name123_-"}
 

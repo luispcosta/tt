@@ -149,8 +149,9 @@ func (repo *JSONActivityRepository) List() []core.Activity {
 	folder := fmt.Sprintf("%s", repo.Config.UserDataLocation+repo.DataFolder)
 
 	filepath.Walk(folder, func(path string, info os.FileInfo, err error) error {
-		if !info.IsDir() && filepath.Ext(path) == ".json" {
+		if !info.IsDir() && filepath.Ext(path) == ".json" && filepath.Base(path) != "index.json" {
 			shouldIgnoreFile := false
+
 			fileData, errRead := ioutil.ReadFile(path)
 			if errRead != nil {
 				readingErrors = append(readingErrors, fmt.Sprintf("Could not read data from file %s - error: %s", path, errRead))
