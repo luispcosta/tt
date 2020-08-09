@@ -1,5 +1,9 @@
 package core
 
+import (
+	"fmt"
+)
+
 // AliasIndexData represents the data contained within the index
 type AliasIndexData map[string]string
 
@@ -28,6 +32,11 @@ func (index *AliasIndex) Delete(indexKey string) {
 }
 
 // Update updates the index value for an activity
-func (index *AliasIndex) Update(activity Activity) {
+func (index *AliasIndex) Update(activity Activity) error {
+	if _, ok := index.Data[activity.Alias]; ok {
+		return fmt.Errorf("Activity Alias %s is already being used", activity.Alias)
+	}
+
 	index.Data[activity.Alias] = index.Repository.IndexKey(activity)
+	return nil
 }

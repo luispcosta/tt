@@ -350,7 +350,10 @@ func (repo *JSONActivityRepository) SetActivityAlias(activity core.Activity) err
 		repo.AliasIndex.Load(aliasIndexData)
 	}
 
-	repo.AliasIndex.Update(activity)
+	errUpdate := repo.AliasIndex.Update(activity)
+	if errUpdate != nil {
+		return errUpdate
+	}
 
 	bytes, err := json.Marshal(aliasIndexData)
 	if err != nil {
