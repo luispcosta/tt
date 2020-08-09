@@ -32,7 +32,7 @@ func NewJSONActivityRepository(config configuration.Config) *JSONActivityReposit
 		DataFolder: "data",
 		LogFolder:  "log",
 	}
-	repo.AliasIndex = core.NewAliasIndex(&repo)
+	repo.AliasIndex = core.NewAliasIndex()
 	return &repo
 }
 
@@ -350,7 +350,7 @@ func (repo *JSONActivityRepository) SetActivityAlias(activity core.Activity) err
 		repo.AliasIndex.Load(aliasIndexData)
 	}
 
-	errUpdate := repo.AliasIndex.Update(activity)
+	errUpdate := repo.AliasIndex.Update(activity.Alias, repo.IndexKey(activity))
 	if errUpdate != nil {
 		return errUpdate
 	}
