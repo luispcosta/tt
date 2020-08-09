@@ -67,6 +67,24 @@ func (repo *JSONActivityRepository) Initialize() error {
 		}
 	}
 
+	indexFilePath := fmt.Sprintf("%s%sindex.json", repo.Config.UserDataLocation+repo.DataFolder, string(os.PathSeparator))
+
+	if exists, _ := utils.PathExists(indexFilePath); exists {
+		aliasIndexData := core.AliasIndexData{}
+		fileData, errRead := ioutil.ReadFile(indexFilePath)
+		if errRead != nil {
+			return errRead
+		}
+
+		errUnmarshall := json.Unmarshal([]byte(fileData), &aliasIndexData)
+
+		if errUnmarshall != nil {
+			return errUnmarshall
+		}
+
+		repo.AliasIndex.Load(aliasIndexData)
+	}
+
 	return nil
 }
 
@@ -139,8 +157,11 @@ func (repo *JSONActivityRepository) List() []core.Activity {
 
 // Delete deletes an activity via a name (that needs to match a file name). If the files was deleted with success, then no error is returned.
 func (repo *JSONActivityRepository) Delete(activityName string) error {
-	activityFilePath := repo.activityFilePath(activityName)
 	if repo.activityExists(activityName) {
+		activityFilePath, errGettingActivityPath := repo.activityFilePath(activityName)
+		if errGettingActivityPath != nil {
+			return errGettingActivityPath
+		}
 		activity, errFind := repo.Find(activityName)
 		if errFind != nil {
 			return errFind
@@ -169,10 +190,13 @@ func (repo *JSONActivityRepository) Delete(activityName string) error {
 	return errors.New("Activity not registered")
 }
 
-// Find returns an activity given its name
-func (repo *JSONActivityRepository) Find(activityName string) (*core.Activity, error) {
-	activityFilePath := repo.activityFilePath(activityName)
-	if repo.activityExists(activityName) {
+// Find returns an activity given its name or alias
+func (repo *JSONActivityRepository) Find(activityNameOrAlias string) (*core.Activity, error) {
+	if repo.activityExists(activityNameOrAlias) {
+		activityFilePath, errGettingActivityPath := repo.activityFilePath(activityNameOrAlias)
+		if errGettingActivityPath != nil {
+			return nil, errGettingActivityPath
+		}
 		fileData, errRead := ioutil.ReadFile(activityFilePath)
 		if errRead != nil {
 			return nil, errRead
@@ -343,22 +367,6 @@ func (repo *JSONActivityRepository) Stop(activity core.Activity) error {
 func (repo *JSONActivityRepository) setActivityAlias(activity core.Activity) error {
 	indexFilePath := fmt.Sprintf("%s%sindex.json", repo.Config.UserDataLocation+repo.DataFolder, string(os.PathSeparator))
 
-	if exists, _ := utils.PathExists(indexFilePath); exists {
-		aliasIndexData := core.AliasIndexData{}
-		fileData, errRead := ioutil.ReadFile(indexFilePath)
-		if errRead != nil {
-			return errRead
-		}
-
-		errUnmarshall := json.Unmarshal([]byte(fileData), &aliasIndexData)
-
-		if errUnmarshall != nil {
-			return errUnmarshall
-		}
-
-		repo.AliasIndex.Load(aliasIndexData)
-	}
-
 	errUpdate := repo.AliasIndex.Update(activity.Alias, repo.activityAliasIndexValue(activity))
 	if errUpdate != nil {
 		return errUpdate
@@ -378,7 +386,7 @@ func (repo *JSONActivityRepository) setActivityAlias(activity core.Activity) err
 }
 
 func (repo *JSONActivityRepository) activityAliasIndexValue(activity core.Activity) string {
-	return repo.activityFilePath(activity.Name)
+	return repo.activityFilePathOnDisk(activity.Name)
 }
 
 func (repo *JSONActivityRepository) dayLogFilePath(date time.Time) string {
@@ -390,10 +398,25 @@ func (repo *JSONActivityRepository) dayLogFilePath(date time.Time) string {
 }
 
 func (repo *JSONActivityRepository) activityExists(activityName string) bool {
-	exists, _ := utils.PathExists(repo.activityFilePath(activityName))
+	path, err := repo.activityFilePath(activityName)
+	if err != nil {
+		return false
+	}
+	exists, _ := utils.PathExists(path)
 	return exists
 }
 
-func (repo *JSONActivityRepository) activityFilePath(activityName string) string {
+func (repo *JSONActivityRepository) activityFilePath(activityNameOrAlias string) (string, error) {
+	if repo.AliasIndex.IsIndexed(activityNameOrAlias) {
+		path, err := repo.AliasIndex.Get(activityNameOrAlias)
+		if err != nil {
+			return "", err
+		}
+		return path, nil
+	}
+	return repo.activityFilePathOnDisk(activityNameOrAlias), nil
+}
+
+func (repo *JSONActivityRepository) activityFilePathOnDisk(activityName string) string {
 	return fmt.Sprintf("%s%s%s.json", repo.Config.UserDataLocation+repo.DataFolder, string(os.PathSeparator), strings.ToLower(activityName))
 }

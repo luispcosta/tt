@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/luispcosta/go-tt/core"
 	"github.com/spf13/cobra"
@@ -18,11 +19,13 @@ func NewStopCommand(activityRepo core.ActivityRepository) *cobra.Command {
 			activityName := args[0]
 			activity, err := activityRepo.Find(activityName)
 			if err != nil {
-				fmt.Printf("Could not find activity with name %s", activityName)
+				fmt.Printf("Could not find activity with name or alias %s\n", activityName)
+				os.Exit(1)
 			}
 			errStop := activityRepo.Stop(*activity)
 			if errStop != nil {
-				fmt.Printf("Could not stop activity with name %s - error: %s", activityName, errStop.Error())
+				fmt.Printf("Could not stop activity with name or alias %s - error: %s\n", activityName, errStop.Error())
+				os.Exit(1)
 			}
 		},
 	}

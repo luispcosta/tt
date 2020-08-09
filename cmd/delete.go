@@ -23,7 +23,7 @@ func NewDeleteCommand(activityRepo core.ActivityRepository) *cobra.Command {
 				fmt.Println(errDelete)
 				os.Exit(1)
 			} else {
-				fmt.Printf("Activity %s deleted\n", strings.ToLower(activityName))
+				fmt.Printf("Activity with name or alias %s deleted\n", strings.ToLower(activityName))
 			}
 		},
 	}

@@ -54,3 +54,12 @@ func (index *AliasIndex) Update(aliasKey string, aliasValue string) error {
 	index.Data[strings.ToLower(aliasKey)] = aliasValue
 	return nil
 }
+
+// Get gets one entry from the index if it exists
+func (index *AliasIndex) Get(aliasKey string) (string, error) {
+	if !index.IsIndexed(aliasKey) {
+		return "", errors.New("Activity alias not indexed")
+	}
+
+	return index.Data[strings.ToLower(aliasKey)], nil
+}
