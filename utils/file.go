@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"fmt"
 	"os"
 	"os/user"
 )
@@ -25,16 +24,11 @@ func CreateDir(path string) error {
 
 // WriteToFile writes bytes to a file.
 func WriteToFile(fileName string, bytes []byte) error {
-	fmt.Println(fileName)
 	f, err := os.Create(fileName)
-	fmt.Println(err)
 	defer f.Close()
 	if err != nil {
-		fmt.Println("Could not create path")
-		fmt.Println(err)
 		return err
 	}
-	fmt.Println(f.Name())
 	_, errorWrite := f.Write(bytes)
 	if errorWrite != nil {
 		return errorWrite

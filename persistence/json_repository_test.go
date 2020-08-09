@@ -528,6 +528,4 @@ func TestStopActivity(t *testing.T) {
 	if log.Duration == 0 {
 		t.Fatalf("Activity log Duration field should have been filled after starting and stopping activity")
 	}
-
-	fmt.Println(log.Duration)
 }
