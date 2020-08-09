@@ -3,12 +3,12 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/luispcosta/go-tt/persistence"
+	"github.com/luispcosta/go-tt/core"
 	"github.com/spf13/cobra"
 )
 
 // NewStopCommand stops tracking an activity
-func NewStopCommand(activityRepo persistence.ActivityRepository) *cobra.Command {
+func NewStopCommand(activityRepo core.ActivityRepository) *cobra.Command {
 	stopCmd := &cobra.Command{
 		Use:   "stop",
 		Short: "Stop an activity",

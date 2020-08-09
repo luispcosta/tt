@@ -6,8 +6,6 @@ import (
 
 	"github.com/luispcosta/go-tt/core"
 
-	"github.com/luispcosta/go-tt/persistence"
-
 	"github.com/spf13/cobra"
 )
 
@@ -17,19 +15,30 @@ type addCommand struct {
 }
 
 // NewAddCommand builds the "add" command
-func NewAddCommand(activityRepo persistence.ActivityRepository) *cobra.Command {
+func NewAddCommand(activityRepo core.ActivityRepository) *cobra.Command {
 	addCmd := &cobra.Command{
 		Use:   "add",
 		Short: "Adds a new activity",
 		Long:  "Registers a new activity to be tracked. You can also add an alias to the activity. Case is ignoring for the activity name.",
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			activity := core.Activity{Name: args[0], Alias: cmd.Flag("alias").Value.String()}
+			alias := cmd.Flag("alias").Value.String()
+			activity := core.Activity{Name: args[0], Alias: alias}
 			errUpdate := activityRepo.Update(activity)
 			if errUpdate != nil {
 				fmt.Println(errUpdate)
 				os.Exit(1)
 			}
+
+			if alias != "" {
+				errUpdateAlias := activityRepo.SetActivityAlias(activity)
+
+				if errUpdateAlias != nil {
+					errString := fmt.Sprintf("Could not set alias for activity: %s", errUpdateAlias.Error())
+					fmt.Println(errString)
+				}
+			}
+
 		},
 	}
 	add := addCommand{}

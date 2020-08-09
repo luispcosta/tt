@@ -22,6 +22,7 @@ type JSONActivityRepository struct {
 	Config     configuration.Config
 	DataFolder string
 	LogFolder  string
+	AliasIndex *core.AliasIndex
 }
 
 // NewJSONActivityRepository initializes a new json repository
@@ -31,6 +32,7 @@ func NewJSONActivityRepository(config configuration.Config) *JSONActivityReposit
 		DataFolder: "data",
 		LogFolder:  "log",
 	}
+	repo.AliasIndex = core.NewAliasIndex(&repo)
 	return &repo
 }
 
@@ -125,6 +127,27 @@ func (repo *JSONActivityRepository) List() []core.Activity {
 func (repo *JSONActivityRepository) Delete(activityName string) error {
 	activityFilePath := repo.activityFilePath(activityName)
 	if repo.activityExists(activityName) {
+		activity, errFind := repo.Find(activityName)
+		if errFind != nil {
+			return errFind
+		}
+
+		if activity.Alias != "" {
+			indexFilePath := fmt.Sprintf("%s%sindex.json", repo.Config.UserDataLocation+repo.DataFolder, string(os.PathSeparator))
+			repo.AliasIndex.Delete(activity.Alias)
+			aliasIndexData := repo.AliasIndex.Data
+
+			bytes, err := json.Marshal(aliasIndexData)
+			if err != nil {
+				return nil
+			}
+
+			errWrite := utils.WriteToFile(indexFilePath, bytes)
+			if errWrite != nil {
+				return errWrite
+			}
+		}
+
 		errDelete := utils.DeleteAtPath(activityFilePath)
 		return errDelete
 	}
@@ -298,6 +321,45 @@ func (repo *JSONActivityRepository) Stop(activity core.Activity) error {
 		}
 	} else {
 		return errors.New("No activity started yet today")
+	}
+
+	return nil
+}
+
+func (repo *JSONActivityRepository) IndexKey(activity core.Activity) string {
+	return repo.activityFilePath(activity.Name)
+}
+
+// SetActivityAlias sets the alias for a new activity
+func (repo *JSONActivityRepository) SetActivityAlias(activity core.Activity) error {
+	indexFilePath := fmt.Sprintf("%s%sindex.json", repo.Config.UserDataLocation+repo.DataFolder, string(os.PathSeparator))
+	aliasIndexData := core.AliasIndexData{}
+
+	if exists, _ := utils.PathExists(indexFilePath); exists {
+		fileData, errRead := ioutil.ReadFile(indexFilePath)
+		if errRead != nil {
+			return errRead
+		}
+
+		errUnmarshall := json.Unmarshal([]byte(fileData), &aliasIndexData)
+
+		if errUnmarshall != nil {
+			return errUnmarshall
+		}
+
+		repo.AliasIndex.Load(aliasIndexData)
+	}
+
+	repo.AliasIndex.Update(activity)
+
+	bytes, err := json.Marshal(aliasIndexData)
+	if err != nil {
+		return nil
+	}
+
+	errWrite := utils.WriteToFile(indexFilePath, bytes)
+	if errWrite != nil {
+		return errWrite
 	}
 
 	return nil

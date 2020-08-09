@@ -3,12 +3,12 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/luispcosta/go-tt/persistence"
+	"github.com/luispcosta/go-tt/core"
 	"github.com/spf13/cobra"
 )
 
 // NewListCommand registers the list activity command
-func NewListCommand(activityRepo persistence.ActivityRepository) *cobra.Command {
+func NewListCommand(activityRepo core.ActivityRepository) *cobra.Command {
 	listCmd := &cobra.Command{
 		Use:   "list",
 		Short: "Lists all activities",

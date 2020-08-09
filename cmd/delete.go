@@ -5,12 +5,12 @@ import (
 	"os"
 	"strings"
 
-	"github.com/luispcosta/go-tt/persistence"
+	"github.com/luispcosta/go-tt/core"
 	"github.com/spf13/cobra"
 )
 
 // NewDeleteCommand deletes an activity registered from the system
-func NewDeleteCommand(activityRepo persistence.ActivityRepository) *cobra.Command {
+func NewDeleteCommand(activityRepo core.ActivityRepository) *cobra.Command {
 	deleteCmd := &cobra.Command{
 		Use:   "del",
 		Short: "Deletes an activity",
