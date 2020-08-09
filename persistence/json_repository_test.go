@@ -44,7 +44,7 @@ func assertAliasIndexFileExists(t *testing.T) {
 
 func assertActivityFileExists(activity core.Activity, t *testing.T) {
 	assertConfigurationFolderExists(t)
-	expectedPath := fmt.Sprintf("%s%s.gott%s%s%s%s.json", utils.HomeDir(), string(os.PathSeparator), string(os.PathSeparator), testDataFolder, string(os.PathSeparator), strings.ToLower(activity.Name))
+	expectedPath := activityPath(activity)
 	folderExists, err := utils.PathExists(expectedPath)
 	if err != nil {
 		t.Fatal(err)
@@ -52,6 +52,25 @@ func assertActivityFileExists(activity core.Activity, t *testing.T) {
 
 	if !folderExists {
 		t.Fatal(fmt.Sprintf("Expected activity file path %s to exist", expectedPath))
+	}
+}
+
+func activityPath(activity core.Activity) string {
+	return fmt.Sprintf("%s%s.gott%s%s%s%s.json", utils.HomeDir(), string(os.PathSeparator), string(os.PathSeparator), testDataFolder, string(os.PathSeparator), strings.ToLower(activity.Name))
+}
+
+func assertActivityFileDoesNotExist(activity core.Activity, t *testing.T) {
+	assertConfigurationFolderExists(t)
+	expectedPath := fmt.Sprintf("%s%s.gott%s%s%s%s.json", utils.HomeDir(), string(os.PathSeparator), string(os.PathSeparator), testDataFolder, string(os.PathSeparator), strings.ToLower(activity.Name))
+	fmt.Println("Checking ")
+	fmt.Println(expectedPath)
+	folderExists, err := utils.PathExists(expectedPath)
+	if err == nil {
+		t.Fatal("Should have raised when raise an error path does not exist")
+	}
+
+	if folderExists {
+		t.Fatal(fmt.Sprintf("Expected activity file path %s not to exist, but exists at", expectedPath))
 	}
 }
 
@@ -224,6 +243,66 @@ func TestUpdateFirstActivityIndex(t *testing.T) {
 
 	if !indexData.IsIndexed(activity2.Alias) {
 		t.Error("Should have create alias index for second activity")
+	}
+}
+
+func TestUpdateWhenAddingTwoActivitiesWithTheSameAlias(t *testing.T) {
+	defer clearTestFolder()
+	utils.CreateDir(fmt.Sprintf("%s%s.gott%sdata", utils.HomeDir(), string(os.PathSeparator), string(os.PathSeparator)))
+	activity := core.Activity{}
+	activity.Name = "activity1"
+	activity.Alias = "Hey"
+
+	homeDir := fmt.Sprintf("%s%s.gott%sdata", utils.HomeDir(), string(os.PathSeparator), string(os.PathSeparator))
+
+	filePath := fmt.Sprintf("%s%s%s.json", homeDir, string(os.PathSeparator), activity.Name)
+	f, errCreate := os.Create(filePath)
+	defer f.Close()
+
+	if errCreate != nil {
+		t.Fatal(errCreate)
+	}
+
+	config := configuration.NewConfig()
+	repo := NewCustomJSONActivityRepository(testDataFolder, logTestFolder, *config)
+	err := repo.Initialize()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	errUpdating := repo.Update(activity)
+	if errUpdating != nil {
+		t.Fatal(errUpdating)
+	}
+
+	assertActivityFileExists(activity, t)
+
+	activity2 := core.Activity{}
+	activity2.Name = "activity2"
+	activity2.Alias = activity.Alias
+
+	errUpdating2 := repo.Update(activity2)
+	if errUpdating2 == nil {
+		t.Fatal("Should have failed adding a second activity with an existent alias")
+	}
+
+	assertActivityFileDoesNotExist(activity2, t)
+	assertAliasIndexFileExists(t)
+
+	indexData := repo.AliasIndex
+
+	if !indexData.IsIndexed(activity.Alias) {
+		t.Error("Should have create alias index for first activity")
+	}
+
+	path, errGetIndexPath := indexData.Get(activity.Alias)
+
+	if errGetIndexPath != nil {
+		t.Error("Should not have failed getting the path for an activity that was correctly indexed")
+	}
+
+	if path != activityPath(activity) {
+		t.Error("Activity alias indexed should have been the first one")
 	}
 }
 

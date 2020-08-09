@@ -95,22 +95,46 @@ func (repo *JSONActivityRepository) Update(activity core.Activity) error {
 		return errValidate
 	}
 
-	bytes, err := json.Marshal(activity)
-	if err != nil {
-		return err
-	}
-
-	path := fmt.Sprintf("%s%s%s.json", repo.Config.UserDataLocation+repo.DataFolder, string(os.PathSeparator), strings.ToLower(activity.Name))
-	errWrite := utils.WriteToFile(path, bytes)
-	if errWrite != nil {
-		return errWrite
-	}
-
 	if len(activity.Alias) > 0 {
 		errUpdateAlias := repo.setActivityAlias(activity)
 
 		if errUpdateAlias != nil {
 			return errUpdateAlias
+		}
+	}
+
+	bytes, err := json.Marshal(activity)
+	if err != nil {
+		// We couldn't marshall the activity but the index was already updated. Lets clear it.
+		indexFilePath := fmt.Sprintf("%s%sindex.json", repo.Config.UserDataLocation+repo.DataFolder, string(os.PathSeparator))
+
+		repo.AliasIndex.Delete(activity.Alias)
+		bytes, err := json.Marshal(repo.AliasIndex.Data)
+		if err != nil {
+			return err
+		}
+
+		errWrite := utils.WriteToFile(indexFilePath, bytes)
+		if errWrite != nil {
+			return errWrite
+		}
+	}
+
+	path := fmt.Sprintf("%s%s%s.json", repo.Config.UserDataLocation+repo.DataFolder, string(os.PathSeparator), strings.ToLower(activity.Name))
+	errWrite := utils.WriteToFile(path, bytes)
+	if errWrite != nil {
+		// We couldn't write the activity data but the index was already updated. Lets clear it
+		indexFilePath := fmt.Sprintf("%s%sindex.json", repo.Config.UserDataLocation+repo.DataFolder, string(os.PathSeparator))
+
+		repo.AliasIndex.Delete(activity.Alias)
+		bytes, err := json.Marshal(repo.AliasIndex.Data)
+		if err != nil {
+			return err
+		}
+
+		errWrite := utils.WriteToFile(indexFilePath, bytes)
+		if errWrite != nil {
+			return errWrite
 		}
 	}
 
