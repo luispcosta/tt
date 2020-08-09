@@ -43,6 +43,7 @@ func NewCustomJSONActivityRepository(folder string, logFolder string, config con
 		DataFolder: folder,
 		LogFolder:  logFolder,
 	}
+	repo.AliasIndex = core.NewAliasIndex()
 	return &repo
 }
 
@@ -82,7 +83,20 @@ func (repo *JSONActivityRepository) Update(activity core.Activity) error {
 	}
 
 	path := fmt.Sprintf("%s%s%s.json", repo.Config.UserDataLocation+repo.DataFolder, string(os.PathSeparator), strings.ToLower(activity.Name))
-	return utils.WriteToFile(path, bytes)
+	errWrite := utils.WriteToFile(path, bytes)
+	if errWrite != nil {
+		return errWrite
+	}
+
+	if len(activity.Alias) > 0 {
+		errUpdateAlias := repo.setActivityAlias(activity)
+
+		if errUpdateAlias != nil {
+			return errUpdateAlias
+		}
+	}
+
+	return nil
 }
 
 // List returns all activities currently registered in the system.
@@ -326,16 +340,11 @@ func (repo *JSONActivityRepository) Stop(activity core.Activity) error {
 	return nil
 }
 
-func (repo *JSONActivityRepository) IndexKey(activity core.Activity) string {
-	return repo.activityFilePath(activity.Name)
-}
-
-// SetActivityAlias sets the alias for a new activity
-func (repo *JSONActivityRepository) SetActivityAlias(activity core.Activity) error {
+func (repo *JSONActivityRepository) setActivityAlias(activity core.Activity) error {
 	indexFilePath := fmt.Sprintf("%s%sindex.json", repo.Config.UserDataLocation+repo.DataFolder, string(os.PathSeparator))
-	aliasIndexData := core.AliasIndexData{}
 
 	if exists, _ := utils.PathExists(indexFilePath); exists {
+		aliasIndexData := core.AliasIndexData{}
 		fileData, errRead := ioutil.ReadFile(indexFilePath)
 		if errRead != nil {
 			return errRead
@@ -350,12 +359,12 @@ func (repo *JSONActivityRepository) SetActivityAlias(activity core.Activity) err
 		repo.AliasIndex.Load(aliasIndexData)
 	}
 
-	errUpdate := repo.AliasIndex.Update(activity.Alias, repo.IndexKey(activity))
+	errUpdate := repo.AliasIndex.Update(activity.Alias, repo.activityAliasIndexValue(activity))
 	if errUpdate != nil {
 		return errUpdate
 	}
 
-	bytes, err := json.Marshal(aliasIndexData)
+	bytes, err := json.Marshal(repo.AliasIndex.Data)
 	if err != nil {
 		return nil
 	}
@@ -366,6 +375,10 @@ func (repo *JSONActivityRepository) SetActivityAlias(activity core.Activity) err
 	}
 
 	return nil
+}
+
+func (repo *JSONActivityRepository) activityAliasIndexValue(activity core.Activity) string {
+	return repo.activityFilePath(activity.Name)
 }
 
 func (repo *JSONActivityRepository) dayLogFilePath(date time.Time) string {

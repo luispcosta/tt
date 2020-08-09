@@ -31,9 +31,15 @@ func (index *AliasIndex) Delete(indexKey string) {
 	delete(index.Data, indexKey)
 }
 
+// IsIndexed returns true if the index map already contains the given key
+func (index *AliasIndex) IsIndexed(indexKey string) bool {
+	_, ok := index.Data[strings.ToLower(indexKey)]
+	return ok
+}
+
 // Update updates the index value for an activity
 func (index *AliasIndex) Update(aliasKey string, aliasValue string) error {
-	if _, ok := index.Data[strings.ToLower(aliasKey)]; ok {
+	if index.IsIndexed(aliasKey) {
 		return fmt.Errorf("Activity Alias %s is already being used", aliasKey)
 	}
 

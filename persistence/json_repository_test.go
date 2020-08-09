@@ -29,6 +29,19 @@ func assertConfigurationFolderExists(t *testing.T) {
 	}
 }
 
+func assertAliasIndexFileExists(t *testing.T) {
+	expectedPath := fmt.Sprintf("%s%s.gott%s%s%sindex.json", utils.HomeDir(), string(os.PathSeparator), string(os.PathSeparator), testDataFolder, string(os.PathSeparator))
+
+	fileExists, err := utils.PathExists(expectedPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !fileExists {
+		t.Fatal(fmt.Sprintf("Expected file %s to exist", expectedPath))
+	}
+}
+
 func assertActivityFileExists(activity core.Activity, t *testing.T) {
 	assertConfigurationFolderExists(t)
 	expectedPath := fmt.Sprintf("%s%s.gott%s%s%s%s.json", utils.HomeDir(), string(os.PathSeparator), string(os.PathSeparator), testDataFolder, string(os.PathSeparator), strings.ToLower(activity.Name))
@@ -158,6 +171,60 @@ func TestUpdateActivityWhenActivityFileExists(t *testing.T) {
 
 	assertActivityFileExists(activity, t)
 	defer clearTestFolder()
+}
+
+func TestUpdateFirstActivityIndex(t *testing.T) {
+	defer clearTestFolder()
+	utils.CreateDir(fmt.Sprintf("%s%s.gott%sdata", utils.HomeDir(), string(os.PathSeparator), string(os.PathSeparator)))
+	activity := core.Activity{}
+	activity.Name = "activity1"
+	activity.Alias = "Hey"
+
+	homeDir := fmt.Sprintf("%s%s.gott%sdata", utils.HomeDir(), string(os.PathSeparator), string(os.PathSeparator))
+
+	filePath := fmt.Sprintf("%s%s%s.json", homeDir, string(os.PathSeparator), activity.Name)
+	f, errCreate := os.Create(filePath)
+	defer f.Close()
+
+	if errCreate != nil {
+		t.Fatal(errCreate)
+	}
+
+	config := configuration.NewConfig()
+	repo := NewCustomJSONActivityRepository(testDataFolder, logTestFolder, *config)
+	err := repo.Initialize()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	errUpdating := repo.Update(activity)
+	if errUpdating != nil {
+		t.Fatal(errUpdating)
+	}
+
+	assertActivityFileExists(activity, t)
+
+	activity2 := core.Activity{}
+	activity2.Name = "activity2"
+	activity2.Alias = "a2"
+
+	errUpdating2 := repo.Update(activity2)
+	if errUpdating2 != nil {
+		t.Fatal(errUpdating2)
+	}
+
+	assertActivityFileExists(activity2, t)
+	assertAliasIndexFileExists(t)
+
+	indexData := repo.AliasIndex
+
+	if !indexData.IsIndexed(activity.Alias) {
+		t.Error("Should have create alias index for first activity")
+	}
+
+	if !indexData.IsIndexed(activity2.Alias) {
+		t.Error("Should have create alias index for second activity")
+	}
 }
 
 func TestListActivitiesWhenFolderContainsActivities(t *testing.T) {

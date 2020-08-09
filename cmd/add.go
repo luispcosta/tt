@@ -29,16 +29,6 @@ func NewAddCommand(activityRepo core.ActivityRepository) *cobra.Command {
 				fmt.Println(errUpdate)
 				os.Exit(1)
 			}
-
-			if alias != "" {
-				errUpdateAlias := activityRepo.SetActivityAlias(activity)
-
-				if errUpdateAlias != nil {
-					errString := fmt.Sprintf("Could not set alias for activity: %s", errUpdateAlias.Error())
-					fmt.Println(errString)
-				}
-			}
-
 		},
 	}
 	add := addCommand{}
