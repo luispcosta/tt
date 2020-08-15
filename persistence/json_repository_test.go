@@ -144,6 +144,7 @@ func TestInitializeWhenDataFolderExists(t *testing.T) {
 }
 
 func TestUpdateActivityWhenActivityFileDoesNotExist(t *testing.T) {
+	defer clearTestFolder()
 	config := configuration.NewConfig()
 	repo := NewCustomJSONActivityRepository(testDataFolder, logTestFolder, *config)
 	err := repo.Initialize()
@@ -158,7 +159,7 @@ func TestUpdateActivityWhenActivityFileDoesNotExist(t *testing.T) {
 	}
 
 	assertActivityFileExists(activity, t)
-	defer clearTestFolder()
+
 }
 
 func TestUpdateActivityWhenActivityFileExists(t *testing.T) {
@@ -287,6 +288,7 @@ func TestUpdateWhenAddingTwoActivitiesWithTheSameAlias(t *testing.T) {
 }
 
 func TestListActivitiesWhenFolderContainsActivities(t *testing.T) {
+	defer clearTestFolder()
 	config := configuration.NewConfig()
 	repo := NewCustomJSONActivityRepository(testDataFolder, logTestFolder, *config)
 	err := repo.Initialize()
@@ -311,10 +313,11 @@ func TestListActivitiesWhenFolderContainsActivities(t *testing.T) {
 	if len(activities) != 2 {
 		t.Fatalf("Wrong number of activities listed: got %v and expected %v", len(activities), 2)
 	}
-	defer clearTestFolder()
+
 }
 
 func TestListActivitiesWhenFolderIsEmpty(t *testing.T) {
+	defer clearTestFolder()
 	config := configuration.NewConfig()
 	repo := NewCustomJSONActivityRepository(testDataFolder, logTestFolder, *config)
 	err := repo.Initialize()
@@ -327,10 +330,11 @@ func TestListActivitiesWhenFolderIsEmpty(t *testing.T) {
 	if len(activities) != 0 {
 		t.Fatalf("Wrong number of activities listed: got %v and expected %v", len(activities), 0)
 	}
-	defer clearTestFolder()
+
 }
 
 func TestListActivitiesWhenFolderContainsAnUnexpectedJsonFile(t *testing.T) {
+	defer clearTestFolder()
 	config := configuration.NewConfig()
 	repo := NewCustomJSONActivityRepository(testDataFolder, logTestFolder, *config)
 	err := repo.Initialize()
@@ -353,10 +357,11 @@ func TestListActivitiesWhenFolderContainsAnUnexpectedJsonFile(t *testing.T) {
 	if len(activities) != 1 {
 		t.Fatalf("Wrong number of activities listed: got %v and expected %v", len(activities), 10)
 	}
-	defer clearTestFolder()
+
 }
 
 func TestListActivitiesWhenFolderContainsAnUnexpectedFileType(t *testing.T) {
+	defer clearTestFolder()
 	config := configuration.NewConfig()
 	repo := NewCustomJSONActivityRepository(testDataFolder, logTestFolder, *config)
 	err := repo.Initialize()
@@ -379,10 +384,11 @@ func TestListActivitiesWhenFolderContainsAnUnexpectedFileType(t *testing.T) {
 	if len(activities) != 1 {
 		t.Fatalf("Wrong number of activities listed: got %v and expected %v", len(activities), 10)
 	}
-	defer clearTestFolder()
+
 }
 
 func TestDeleteActivitiesWhenActivityExists(t *testing.T) {
+	defer clearTestFolder()
 	config := configuration.NewConfig()
 	repo := NewCustomJSONActivityRepository(testDataFolder, logTestFolder, *config)
 	err := repo.Initialize()
@@ -401,10 +407,11 @@ func TestDeleteActivitiesWhenActivityExists(t *testing.T) {
 	if errDelete != nil {
 		t.Fatalf("Should not have failed deleting an activity that is registered. Failed with %s", errDelete.Error())
 	}
-	defer clearTestFolder()
+
 }
 
 func TestDeleteActivitiesWhenActivityDoesNotExist(t *testing.T) {
+	defer clearTestFolder()
 	config := configuration.NewConfig()
 	repo := NewCustomJSONActivityRepository(testDataFolder, logTestFolder, *config)
 	err := repo.Initialize()
@@ -423,10 +430,11 @@ func TestDeleteActivitiesWhenActivityDoesNotExist(t *testing.T) {
 	if errDelete == nil {
 		t.Fatalf("Should have failed deleting an activity that does not exist")
 	}
-	defer clearTestFolder()
+
 }
 
 func TestDeleteActivitiesWhenActivityNameDoesntMatchCase(t *testing.T) {
+	defer clearTestFolder()
 	config := configuration.NewConfig()
 	repo := NewCustomJSONActivityRepository(testDataFolder, logTestFolder, *config)
 	err := repo.Initialize()
@@ -445,10 +453,11 @@ func TestDeleteActivitiesWhenActivityNameDoesntMatchCase(t *testing.T) {
 	if errDelete != nil {
 		t.Fatalf("Should not have failed deleting an activity ignoring case")
 	}
-	defer clearTestFolder()
 }
 
 func TestStartActivity(t *testing.T) {
+	defer clearTestFolder()
+	defer clearLogTestFolder()
 	config := configuration.NewConfig()
 	repo := NewCustomJSONActivityRepository(testDataFolder, logTestFolder, *config)
 	err := repo.Initialize()
@@ -479,11 +488,11 @@ func TestStartActivity(t *testing.T) {
 		t.Fatal("Should have created a log entry for activity after starting it")
 	}
 
-	defer clearTestFolder()
-	defer clearLogTestFolder()
 }
 
 func TestStopActivityWhenActivityDoesNotExist(t *testing.T) {
+	defer clearTestFolder()
+	defer clearLogTestFolder()
 	config := configuration.NewConfig()
 	repo := NewCustomJSONActivityRepository(testDataFolder, logTestFolder, *config)
 	err := repo.Initialize()
@@ -497,11 +506,11 @@ func TestStopActivityWhenActivityDoesNotExist(t *testing.T) {
 		t.Fatal("Should have failed stopping an activity that does not exist")
 	}
 
-	defer clearTestFolder()
-	defer clearLogTestFolder()
 }
 
 func TestStopActivityWhenNoActivityHasNotBeenStartedYet(t *testing.T) {
+	defer clearTestFolder()
+	defer clearLogTestFolder()
 	config := configuration.NewConfig()
 	repo := NewCustomJSONActivityRepository(testDataFolder, logTestFolder, *config)
 	err := repo.Initialize()
@@ -524,9 +533,6 @@ func TestStopActivityWhenNoActivityHasNotBeenStartedYet(t *testing.T) {
 	if errStop.Error() != "No activity started yet today" {
 		t.Fatal("Error should have been: no activity started yet today")
 	}
-
-	defer clearTestFolder()
-	defer clearLogTestFolder()
 }
 
 func TestStopActivityWhenActivityHasNotBeenStartedYet(t *testing.T) {
