@@ -15,4 +15,5 @@ type ActivityRepository interface {
 	Find(string) (*Activity, error)
 	FindLogsForDay(time.Time) (ActivityDayLog, error)
 	Purge() error
+	Backup(string) (string, error)
 }

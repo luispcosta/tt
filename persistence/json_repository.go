@@ -406,6 +406,17 @@ func (repo *JSONActivityRepository) Purge() error {
 	return nil
 }
 
+// Backup creates a zip file the data registered in the system
+func (repo *JSONActivityRepository) Backup(destination string) (string, error) {
+	userDataLocation := repo.Config.UserDataLocation
+	err := utils.ZipIt(userDataLocation, destination)
+	if err != nil {
+		return "", err
+	}
+
+	return destination, nil
+}
+
 func (repo *JSONActivityRepository) setActivityAlias(activity core.Activity) error {
 	indexFilePath := fmt.Sprintf("%s%sindex.json", repo.Config.UserDataLocation+repo.DataFolder, string(os.PathSeparator))
 
