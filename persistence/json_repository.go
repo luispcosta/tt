@@ -389,6 +389,23 @@ func (repo *JSONActivityRepository) Stop(activity core.Activity) error {
 	return nil
 }
 
+// Purge deletes all activity data
+func (repo *JSONActivityRepository) Purge() error {
+	userDataLocation := repo.Config.UserDataLocation
+	userDataLocationExists, _ := utils.PathExists(userDataLocation)
+
+	if userDataLocationExists {
+		err := utils.DeleteDir(userDataLocation)
+		if err != nil {
+			errorStr := fmt.Sprintf("Could not delete data: %s", err.Error())
+			return errors.New(errorStr)
+		}
+	} else {
+		return errors.New("Nothing to delete. Have you run this command before?")
+	}
+	return nil
+}
+
 func (repo *JSONActivityRepository) setActivityAlias(activity core.Activity) error {
 	indexFilePath := fmt.Sprintf("%s%sindex.json", repo.Config.UserDataLocation+repo.DataFolder, string(os.PathSeparator))
 

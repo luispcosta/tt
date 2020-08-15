@@ -36,6 +36,7 @@ func Execute() {
 	rootCmd.AddCommand(NewDeleteCommand(repo))
 	rootCmd.AddCommand(NewStartCommand(repo))
 	rootCmd.AddCommand(NewStopCommand(repo))
+	rootCmd.AddCommand(NewPurgeCommand(repo))
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)

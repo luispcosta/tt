@@ -655,3 +655,62 @@ func TestStopActivity(t *testing.T) {
 		t.Fatalf("Activity log Duration field should have been filled after starting and stopping activity")
 	}
 }
+
+func TestPurgeCommandWithDataAlready(t *testing.T) {
+	defer clearTestFolder()
+	defer clearLogTestFolder()
+
+	config := configuration.NewConfig()
+	repo := NewCustomJSONActivityRepository(testDataFolder, logTestFolder, *config)
+	err := repo.Initialize()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	activity1 := core.Activity{Name: "ACT", Alias: ""}
+
+	errActivity1 := repo.Update(activity1)
+	if errActivity1 != nil {
+		t.Fatal("Should not have failed creating a valid activity")
+	}
+
+	errPurge := repo.Purge()
+
+	if errPurge != nil {
+		t.Error("Should not have failed running purge command with activity data present")
+	}
+
+	userDataLocationFolder := fmt.Sprintf("%s%s.gott", utils.HomeDir(), string(os.PathSeparator))
+
+	exists, _ := utils.PathExists(userDataLocationFolder)
+
+	if exists {
+		t.Error("Should have had deleted user data location folder when running purge command")
+	}
+}
+
+func TestPurgeCommandWithoutData(t *testing.T) {
+	defer clearTestFolder()
+	defer clearLogTestFolder()
+
+	config := configuration.NewConfig()
+	repo := NewCustomJSONActivityRepository(testDataFolder, logTestFolder, *config)
+	err := repo.Initialize()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	errPurge := repo.Purge()
+
+	if errPurge != nil {
+		t.Error("Should not have failed running purge command without any data first")
+	}
+
+	userDataLocationFolder := fmt.Sprintf("%s%s.gott", utils.HomeDir(), string(os.PathSeparator))
+
+	exists, _ := utils.PathExists(userDataLocationFolder)
+
+	if exists {
+		t.Error("Should have had deleted user data location folder when running purge command")
+	}
+}

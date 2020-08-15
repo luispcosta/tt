@@ -51,3 +51,8 @@ func HomeDir() string {
 func DeleteAtPath(path string) error {
 	return os.Remove(path)
 }
+
+// DeleteDir deletes a directory
+func DeleteDir(path string) error {
+	return os.RemoveAll(path)
+}
