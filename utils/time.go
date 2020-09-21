@@ -26,3 +26,12 @@ func CalcActivityLogDuration(log core.ActivityLog) (float64, error) {
 	duration := end.Sub(start).Seconds()
 	return duration, nil
 }
+
+// ParseSimpleDate parses a string into a simple date (2006-01-02 format)
+func ParseSimpleDate(date string) (*time.Time, error) {
+	parsedDate, err := time.Parse("2006-01-02", date)
+	if err != nil {
+		return nil, err
+	}
+	return &parsedDate, nil
+}
