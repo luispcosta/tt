@@ -236,7 +236,7 @@ func (repo *JSONActivityRepository) Find(activityNameOrAlias string) (*core.Acti
 		return &activity, nil
 	}
 
-	return nil, errors.New("Activity does not exist")
+	return nil, utils.NewNotFoundError(fmt.Sprintf("Activity with name and/or alias: %s not found", activityNameOrAlias))
 }
 
 // FindLogsForDay returns a day log file for the given date if it exists
@@ -259,7 +259,7 @@ func (repo *JSONActivityRepository) FindLogsForDay(day time.Time) (core.Activity
 		return dayLog, nil
 	}
 
-	return nil, errors.New("Activity Log does not exist")
+	return nil, utils.NewNotFoundError(fmt.Sprintf("logs for day %s not found", day))
 }
 
 // Start sets the start time of an activity
