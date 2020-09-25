@@ -2,7 +2,6 @@ package reporter
 
 import (
 	"errors"
-	"time"
 
 	"github.com/luispcosta/go-tt/core"
 )
@@ -22,6 +21,6 @@ func (reporter *EmptyReporter) Initialize(repo core.ActivityRepository) error {
 }
 
 // ProduceReport no-op
-func (reporter *EmptyReporter) ProduceReport(startDate time.Time, endDate time.Time) error {
+func (reporter *EmptyReporter) ProduceReport(period core.Period) error {
 	return errors.New("Non implementation of a reporter")
 }

@@ -2,7 +2,6 @@ package reporter
 
 import (
 	"errors"
-	"time"
 
 	"github.com/luispcosta/go-tt/core"
 )
@@ -25,6 +24,6 @@ func (reporter *CliReporter) Initialize(repo core.ActivityRepository) error {
 }
 
 // ProduceReport creates a new cli report in the given period
-func (reporter *CliReporter) ProduceReport(startDate time.Time, endDate time.Time) error {
+func (reporter *CliReporter) ProduceReport(period core.Period) error {
 	return errors.New("TODO")
 }

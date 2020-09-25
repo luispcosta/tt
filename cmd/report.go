@@ -7,7 +7,6 @@ import (
 
 	"github.com/luispcosta/go-tt/core"
 	"github.com/luispcosta/go-tt/reporter"
-	"github.com/luispcosta/go-tt/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -21,20 +20,29 @@ func NewReportCommand(activityRepo core.ActivityRepository) *cobra.Command {
 	reportCommand := &cobra.Command{
 		Use:   "report",
 		Short: "Creates an activity report over a time period",
-		Long:  "Generates a report that presents information about all the activities you performed in the required period.",
-		Args:  cobra.ExactArgs(2),
+		Long: fmt.Sprintf(`
+			Generates a report that presents information about all the activities you performed in the required period.
+			This command accepts 1 or 2 arguments.
+
+			If only 1 argument is provided, than it is assumed that the user wants a report in a fixed time frame. This argument represents
+			that time frame. Accepted values are: %v. All time frames are relative to the current day.
+
+			If two arguments are passed, they are used to construct a specific time frame period. 
+			For example: $ go-tt report '2020-10-10' '2020-10-20'
+		`, core.AllowedPeriodFixedTimeFrames()),
+		Args: cobra.RangeArgs(1, 2),
 		Run: func(cmd *cobra.Command, args []string) {
-			startDate := args[0]
-			endDate := args[1]
-			parsedStDate, err1 := utils.ParseSimpleDate(startDate)
-			if err1 != nil {
-				fmt.Println(err1)
-				os.Exit(1)
-			}
-			parsedEdDate, err2 := utils.ParseSimpleDate(endDate)
-			if err2 != nil {
-				fmt.Println(err2)
-				os.Exit(1)
+			var period core.Period
+			if len(args) == 2 {
+				parsedPeriod, errPeriod := core.PeriodFromDateStrings(args[0], args[1])
+
+				if errPeriod != nil {
+					fmt.Println(errPeriod)
+					os.Exit(1)
+				}
+				period = parsedPeriod
+			} else {
+				period = core.PeriodFromKeyWord(args[0])
 			}
 
 			format := strings.ToLower(cmd.Flag("format").Value.String())
@@ -52,7 +60,7 @@ func NewReportCommand(activityRepo core.ActivityRepository) *cobra.Command {
 				os.Exit(1)
 			}
 
-			err := reporter.ProduceReport(*parsedStDate, *parsedEdDate)
+			err := reporter.ProduceReport(period)
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(1)

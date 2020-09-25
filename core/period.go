@@ -64,6 +64,11 @@ func PeriodFromKeyWord(keyword string) Period {
 	return Period{Sd: sd, Ed: ed}
 }
 
+// AllowedPeriodFixedTimeFrames returns an array of allowed period fixed time frames
+func AllowedPeriodFixedTimeFrames() []string {
+	return []string{lastDayPeriod, lastWeekPeriod, lastMonthPeriod, lastYearPeriod}
+}
+
 func parseSimpleDate(date string) (*time.Time, error) {
 	parsedDate, err := time.Parse("2006-01-02", date)
 	if err != nil {
