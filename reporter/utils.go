@@ -19,12 +19,17 @@ func AllowedFormats() map[string]core.Reporter {
 	return allowedFormats
 }
 
-// IsAllowedFormat returns true if the format is allowed
-func IsAllowedFormat(format string) bool {
-	return Create(format) != nil
+// AllowedFormatsCollection returns the collection of allowed formats
+func AllowedFormatsCollection() []string {
+	return []string{jsonFormat, csvFormat, cliFormat}
 }
 
-// Create creates a new reporter
-func Create(format string) core.Reporter {
+// IsAllowedFormat returns true if the format is allowed
+func IsAllowedFormat(format string) bool {
+	return CreateReporter(format) != nil
+}
+
+// CreateReporter creates a new reporter
+func CreateReporter(format string) core.Reporter {
 	return AllowedFormats()[strings.ToLower(format)]
 }
