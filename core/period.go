@@ -11,7 +11,7 @@ type Period struct {
 	Ed time.Time
 }
 
-// NumberOfDays returns the number of daus in the period
+// NumberOfDays returns the number of days in the period
 func (period *Period) NumberOfDays() int {
 	if dateEqual(period.Sd, period.Ed) {
 		return 1

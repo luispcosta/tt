@@ -22,10 +22,20 @@ func TestNumberOfDaysWhenSdIsBeforeEd(t *testing.T) {
 }
 
 func TestNumberOfDays(t *testing.T) {
-	period := Period{Sd: time.Now(), Ed: time.Now().AddDate(0, 0, 10)}
+	period1 := Period{Sd: time.Now(), Ed: time.Now().AddDate(0, 0, 10)}
 
-	if period.NumberOfDays() != 10 {
+	if period1.NumberOfDays() != 10 {
 		t.Error("Number of perid days should be 10 when ed is 10 days after sd")
+	}
+
+	period2, err := PeriodFromDateStrings("2020-10-10", "2020-10-20")
+
+	if err != nil {
+		t.Error("Should not have failed creating period from '2020-10-10', '2020-10-20'")
+	}
+
+	if period2.NumberOfDays() != 10 {
+		t.Error("Number of period days should be 10 when period created from: '2020-10-10', '2020-10-20'")
 	}
 }
 
