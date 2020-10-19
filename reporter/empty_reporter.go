@@ -1,9 +1,8 @@
 package reporter
 
 import (
-	"errors"
-
 	"github.com/luispcosta/go-tt/core"
+	"github.com/luispcosta/go-tt/utils"
 )
 
 // EmptyReporter represents a reporter not supported
@@ -16,11 +15,11 @@ func NewEmptyReporter() *EmptyReporter {
 }
 
 // Initialize initializes a new empty reporter
-func (reporter *EmptyReporter) Initialize(repo core.ActivityRepository) error {
-	return errors.New("This reporter cannot be initialized")
+func (reporter *EmptyReporter) Initialize(repo core.ActivityRepository, period core.Period) error {
+	return utils.NewReportNotImplementedError()
 }
 
 // ProduceReport no-op
-func (reporter *EmptyReporter) ProduceReport(period core.Period) error {
-	return errors.New("Non implementation of a reporter")
+func (reporter *EmptyReporter) ProduceReport() error {
+	return utils.NewReportNotImplementedError()
 }

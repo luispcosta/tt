@@ -56,14 +56,14 @@ func NewReportCommand(activityRepo core.ActivityRepository) *cobra.Command {
 
 			reporter := reporter.CreateReporter(format)
 
-			errInit := reporter.Initialize(activityRepo)
+			errInit := reporter.Initialize(activityRepo, period)
 
 			if errInit != nil {
 				fmt.Println(errInit)
 				os.Exit(1)
 			}
 
-			err := reporter.ProduceReport(period)
+			err := reporter.ProduceReport()
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(1)

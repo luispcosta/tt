@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"fmt"
 	"strconv"
 	"time"
 
@@ -25,4 +26,9 @@ func CalcActivityLogDuration(log core.ActivityLog) (float64, error) {
 
 	duration := end.Sub(start).Seconds()
 	return duration, nil
+}
+
+// SecondsToHours returns a string with the representation of a number that is in seconds, to hours
+func SecondsToHours(seconds float64) string {
+	return fmt.Sprintf("%.2f", seconds/3600)
 }

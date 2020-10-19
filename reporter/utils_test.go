@@ -1,6 +1,8 @@
 package reporter
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestIsAllowedFormat(t *testing.T) {
 	if IsAllowedFormat("xpto") {

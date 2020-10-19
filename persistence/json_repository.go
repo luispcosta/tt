@@ -22,6 +22,7 @@ type JSONActivityRepository struct {
 	Config     configuration.Config
 	DataFolder string
 	LogFolder  string
+	Clock      utils.Clock
 	AliasIndex *core.AliasIndex
 }
 
@@ -31,17 +32,19 @@ func NewJSONActivityRepository(config configuration.Config) *JSONActivityReposit
 		Config:     config,
 		DataFolder: "data",
 		LogFolder:  "log",
+		Clock:      utils.NewLiveClock(),
 	}
 	repo.AliasIndex = core.NewAliasIndex()
 	return &repo
 }
 
 // NewCustomJSONActivityRepository initializes a new json repository where the data lives in a custom folder.
-func NewCustomJSONActivityRepository(folder string, logFolder string, config configuration.Config) *JSONActivityRepository {
+func NewCustomJSONActivityRepository(folder string, logFolder string, config configuration.Config, clock utils.Clock) *JSONActivityRepository {
 	repo := JSONActivityRepository{
 		Config:     config,
 		DataFolder: folder,
 		LogFolder:  logFolder,
+		Clock:      clock,
 	}
 	repo.AliasIndex = core.NewAliasIndex()
 	return &repo
@@ -264,7 +267,7 @@ func (repo *JSONActivityRepository) FindLogsForDay(day time.Time) (core.Activity
 
 // Start sets the start time of an activity
 func (repo *JSONActivityRepository) Start(activity core.Activity) error {
-	instant := time.Now()
+	instant := repo.Clock.Now()
 	year := instant.Year()
 	month := instant.Month()
 	logFilePath := repo.dayLogFilePath(instant)
@@ -284,7 +287,7 @@ func (repo *JSONActivityRepository) Start(activity core.Activity) error {
 
 		logs := dayLog[activity.Name]
 		log := core.ActivityLog{}
-		log.Start = strconv.FormatInt(time.Now().Unix(), 10)
+		log.Start = strconv.FormatInt(repo.Clock.Now().Unix(), 10)
 
 		logs = append(logs, log)
 		dayLog[activity.Name] = logs
@@ -301,7 +304,7 @@ func (repo *JSONActivityRepository) Start(activity core.Activity) error {
 		}
 	} else {
 		log := core.ActivityLog{}
-		log.Start = strconv.FormatInt(time.Now().Unix(), 10)
+		log.Start = strconv.FormatInt(repo.Clock.Now().Unix(), 10)
 		dayLog := make(core.ActivityDayLog)
 		dayLog[activity.Name] = []core.ActivityLog{log}
 		bytes, err := json.Marshal(dayLog)
@@ -336,7 +339,7 @@ func (repo *JSONActivityRepository) Start(activity core.Activity) error {
 
 // Stop sets the end time for an activity
 func (repo *JSONActivityRepository) Stop(activity core.Activity) error {
-	instant := time.Now()
+	instant := repo.Clock.Now()
 	logFilePath := repo.dayLogFilePath(instant)
 	exists, _ := utils.PathExists(logFilePath)
 	if exists {
@@ -361,7 +364,7 @@ func (repo *JSONActivityRepository) Stop(activity core.Activity) error {
 			} else if lastEntry.End != "" {
 				return errors.New("Last activity has already been stoped. Please start a new one")
 			} else {
-				lastEntry.End = strconv.FormatInt(time.Now().Unix(), 10)
+				lastEntry.End = strconv.FormatInt(repo.Clock.Now().Unix(), 10)
 				duration, errCalcDuration := utils.CalcActivityLogDuration(lastEntry)
 				if errCalcDuration != nil {
 					return errCalcDuration
