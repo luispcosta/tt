@@ -1,8 +1,10 @@
 package utils
 
 import (
+	"fmt"
 	"os"
 	"os/user"
+	"path/filepath"
 )
 
 // PathExists returns true whether the path exists or not in the file system
@@ -55,4 +57,10 @@ func DeleteAtPath(path string) error {
 // DeleteDir deletes a directory
 func DeleteDir(path string) error {
 	return os.RemoveAll(path)
+}
+
+// IsExtension checks if a file has the correct extension. It assumes the path exists
+func IsExtension(path, wantedExtension string) bool {
+	ext := filepath.Ext(path)
+	return ext == fmt.Sprintf(".%s", wantedExtension)
 }

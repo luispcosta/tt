@@ -420,6 +420,11 @@ func (repo *JSONActivityRepository) Backup(destination string) (string, error) {
 	return destination, nil
 }
 
+// Restore restores the repository data with a given backup file
+func (repo *JSONActivityRepository) Restore(restoreFilePath string) error {
+	return nil
+}
+
 func (repo *JSONActivityRepository) setActivityAlias(activity core.Activity) error {
 	indexFilePath := fmt.Sprintf("%s%sindex.json", repo.Config.UserDataLocation+repo.DataFolder, string(os.PathSeparator))
 
