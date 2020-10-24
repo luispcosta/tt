@@ -19,7 +19,7 @@ func NewStartCommand(activityRepo core.ActivityRepository) *cobra.Command {
 			activityNameOrAlias := args[0]
 			activity, err := activityRepo.Find(activityNameOrAlias)
 			if err != nil {
-				fmt.Printf("Could not find activity with name and or alias %s - error: %s\n", activityNameOrAlias, err.Error())
+				fmt.Printf("Could not start activity. Error: %s\n", err.Error())
 				os.Exit(1)
 			}
 			errStart := activityRepo.Start(*activity)
