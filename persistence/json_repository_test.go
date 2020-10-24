@@ -695,3 +695,76 @@ func TestPurgeCommandWithoutData(t *testing.T) {
 		t.Error("Should have had deleted user data location folder when running purge command")
 	}
 }
+
+func TestRestoreCommand(t *testing.T) {
+	defer utils.ClearTestFolder()
+	defer utils.ClearLogTestFolder()
+
+	config := configuration.NewConfig()
+	repo := NewCustomJSONActivityRepository(utils.TestDataFolder, utils.LogTestFolder, *config, utils.NewLiveClock())
+	err := repo.Initialize()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	activity1 := core.Activity{Name: "ACT", Alias: ""}
+
+	errActivity1 := repo.Update(activity1)
+	if errActivity1 != nil {
+		t.Fatal("Should not have failed creating a valid activity")
+	}
+
+	repo.Start(activity1)
+	time.Sleep(1 * time.Second)
+	errInitialStop := repo.Stop(activity1)
+
+	if errInitialStop != nil {
+		t.Fatal("Should not have failed stopping activity")
+	}
+
+	backupFile, errBup := repo.Backup("tmpBackup.zip")
+	defer utils.DeleteAtPath(backupFile)
+
+	if errBup != nil {
+		t.Fatal("Should not have failed creating a backup file")
+	}
+
+	// This activity should not appear when we restore since we have created it after the backup
+	activity2 := core.Activity{Name: "ACT2", Alias: "", Description: "Activity 2"}
+
+	errActivity2 := repo.Update(activity2)
+	if errActivity2 != nil {
+		t.Fatal("Should not have failed creating a valid activity")
+	}
+
+	// This activity data should not be present because it was added after the backup
+	repo.Start(activity2)
+	time.Sleep(1 * time.Second)
+	errInitialStop2 := repo.Stop(activity2)
+
+	if errInitialStop2 != nil {
+		t.Fatal("Should not have failed stopping activity")
+	}
+
+	errRestore := repo.Restore(backupFile)
+
+	if errRestore != nil {
+		t.Fatal("Should not have failed restoring")
+	}
+
+	listAfterRestore := repo.List()
+
+	if len(listAfterRestore) > 1 {
+		t.Fatal("After restoring, only one activity should be present")
+	}
+
+	dayLog, errFetchDayLogs := repo.FindLogsForDay(time.Now())
+
+	if errFetchDayLogs != nil {
+		t.Fatal("Should not have failed after requesting logs for current day")
+	}
+
+	if len(dayLog) > 1 {
+		t.Fatal("Should only exist one log entry after restoring with a previous backup")
+	}
+}

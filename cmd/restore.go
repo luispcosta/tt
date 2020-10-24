@@ -39,6 +39,7 @@ func NewRestoreCommand(activityRepo core.ActivityRepository) *cobra.Command {
 						fmt.Println(err.Error())
 						os.Exit(1)
 					}
+					fmt.Println("Restore complete")
 				} else {
 					os.Exit(1)
 				}

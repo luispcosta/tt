@@ -19,6 +19,16 @@ func NewConfig() *Config {
 	return &config
 }
 
+// DeleteConfig deletes the current config folder
+func (config *Config) DeleteConfig() error {
+	homeDir := utils.HomeDir()
+	err := utils.DeleteDir(fmt.Sprintf("%s%s.gott", homeDir, string(os.PathSeparator)))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func initConfigWithDefaultValues(config *Config) {
 	homeDir := utils.HomeDir()
 	config.UserDataLocation = fmt.Sprintf("%s%s.gott%s", homeDir, string(os.PathSeparator), string(os.PathSeparator))

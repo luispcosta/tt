@@ -24,6 +24,10 @@ func CreateDir(path string) error {
 	return err
 }
 
+func Move(from, to string) error {
+	return os.Rename(from, to)
+}
+
 // WriteToFile writes bytes to a file.
 func WriteToFile(fileName string, bytes []byte) error {
 	f, err := os.Create(fileName)

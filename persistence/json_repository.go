@@ -422,6 +422,21 @@ func (repo *JSONActivityRepository) Backup(destination string) (string, error) {
 
 // Restore restores the repository data with a given backup file
 func (repo *JSONActivityRepository) Restore(restoreFilePath string) error {
+	errUnzip := utils.Unzip(restoreFilePath, "tmpUnzip")
+	defer utils.DeleteDir("tmpUnzip")
+	if errUnzip != nil {
+		return errUnzip
+	}
+	errDelete := repo.Config.DeleteConfig()
+	if errDelete != nil {
+		return errDelete
+	}
+
+	errMove := utils.Move(fmt.Sprintf("tmpUnzip%s.gott", string(os.PathSeparator)), fmt.Sprintf("%s%s.gott", utils.HomeDir(), string(os.PathSeparator)))
+	if errMove != nil {
+		return errMove
+	}
+
 	return nil
 }
 
