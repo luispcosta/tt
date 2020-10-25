@@ -272,6 +272,15 @@ func (repo *JSONActivityRepository) Start(activity core.Activity) error {
 	month := instant.Month()
 	logFilePath := repo.dayLogFilePath(instant)
 	exists, _ := utils.PathExists(logFilePath)
+	someActivityStartedToday, err := repo.someActivityAlreadyStartedToday()
+
+	if err != nil {
+		return err
+	}
+
+	if someActivityStartedToday {
+		return errors.New("An activity has already been started today")
+	}
 	if exists {
 		dayLog := core.ActivityDayLog{}
 		fileData, errRead := ioutil.ReadFile(logFilePath)
@@ -438,6 +447,32 @@ func (repo *JSONActivityRepository) Restore(restoreFilePath string) error {
 	}
 
 	return nil
+}
+
+func (repo *JSONActivityRepository) someActivityAlreadyStartedToday() (bool, error) {
+	logs, err := repo.FindLogsForDay(time.Now())
+
+	if err != nil {
+		if _, ok := err.(*utils.NotFoundError); ok {
+			return false, nil
+		} else {
+			return false, err
+		}
+	}
+
+	if len(logs) == 0 {
+		return false, nil
+	}
+
+	for _, v := range logs {
+		for _, logEntry := range v {
+			if logEntry.Start != "" && logEntry.End == "" { // an activity has started, but hasn't yet finished today
+				return true, nil
+			}
+		}
+	}
+
+	return false, nil
 }
 
 func (repo *JSONActivityRepository) setActivityAlias(activity core.Activity) error {

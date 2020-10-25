@@ -465,6 +465,57 @@ func TestStartActivity(t *testing.T) {
 
 }
 
+func TestStartActivityWhenAnActivityHasBeenStartedBefore(t *testing.T) {
+	defer utils.ClearTestFolder()
+	defer utils.ClearLogTestFolder()
+	config := configuration.NewConfig()
+	repo := NewCustomJSONActivityRepository(utils.TestDataFolder, utils.LogTestFolder, *config, utils.NewLiveClock())
+	err := repo.Initialize()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	activity1 := core.Activity{Name: "ACT", Alias: ""}
+	errActivity1 := repo.Update(activity1)
+	if errActivity1 != nil {
+		t.Fatal("Should not have failed creating a valid activity")
+	}
+
+	activity2 := core.Activity{Name: "ACT2", Alias: ""}
+	errActivity2 := repo.Update(activity2)
+	if errActivity2 != nil {
+		t.Fatal("Should not have failed creating a valid activity")
+	}
+
+	errStart1 := repo.Start(activity1)
+	if errStart1 != nil {
+		t.Fatal("Should not have failed starting the first activity")
+	}
+
+	errStart2 := repo.Start(activity2)
+
+	if errStart2 == nil {
+		t.Fatal("Should have failed starting an activity when an activity on current had already been started before")
+	}
+
+	assertActivityLogFileExistsCurrentDay(t)
+
+	_, errFind := repo.Find(activity1.Name)
+	if errFind != nil {
+		t.Fatal("Should not have failed to find activity that was created before")
+	}
+
+	activityDayLog, errDayLog := repo.FindLogsForDay(time.Now())
+	if errDayLog != nil {
+		t.Fatal("Should have created one activity day log after starting an activity")
+	}
+
+	if activityDayLog[activity1.Name] == nil {
+		t.Fatal("Should have created a log entry for activity after starting it")
+	}
+
+}
+
 func TestStopActivityWhenActivityDoesNotExist(t *testing.T) {
 	defer utils.ClearTestFolder()
 	defer utils.ClearLogTestFolder()
