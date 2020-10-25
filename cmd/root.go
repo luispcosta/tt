@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"bufio"
 	"fmt"
 	"os"
 
@@ -45,4 +46,12 @@ func Execute() {
 		fmt.Println(err)
 		os.Exit(1)
 	}
+}
+
+func userAllowedToContinue(confirmationMsg string) bool {
+	scanner := bufio.NewScanner(os.Stdin)
+	fmt.Print(confirmationMsg)
+	scanner.Scan()
+	text := scanner.Text()
+	return text == "y"
 }

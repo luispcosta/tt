@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"bufio"
 	"fmt"
 	"os"
 
@@ -33,7 +32,7 @@ func NewRestoreCommand(activityRepo core.ActivityRepository) *cobra.Command {
 			}
 
 			if utils.IsExtension(backupFilePath, "zip") {
-				if force == "true" || userAllowedToContinue() {
+				if force == "true" || userAllowedToContinue("Are you sure you want to proceed? This will erase any data you already have locally. Type 'y' to continue: ") {
 					err := activityRepo.Restore(backupFilePath)
 					if err != nil {
 						fmt.Println(err.Error())
@@ -41,6 +40,7 @@ func NewRestoreCommand(activityRepo core.ActivityRepository) *cobra.Command {
 					}
 					fmt.Println("Restore complete")
 				} else {
+					fmt.Println("Operation aborted")
 					os.Exit(1)
 				}
 			} else {
@@ -55,12 +55,4 @@ func NewRestoreCommand(activityRepo core.ActivityRepository) *cobra.Command {
 	resCmd.Flags().BoolVarP(&cmd.force, "force", "f", false, "Force the restore without prompting for confirmation")
 	cmd.baseCmd = resCmd
 	return resCmd
-}
-
-func userAllowedToContinue() bool {
-	scanner := bufio.NewScanner(os.Stdin)
-	fmt.Print("Are you sure you want to proceed? This will erase any data you already have locally. Type 'y' to continue: ")
-	scanner.Scan()
-	text := scanner.Text()
-	return text == "y"
 }
