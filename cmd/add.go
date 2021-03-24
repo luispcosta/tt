@@ -26,9 +26,9 @@ func NewAddCommand(activityRepo core.ActivityRepository) *cobra.Command {
 			alias := cmd.Flag("alias").Value.String()
 			description := cmd.Flag("desc").Value.String()
 			activity := core.Activity{Name: args[0], Alias: alias, Description: description}
-			errUpdate := activityRepo.Update(activity)
-			if errUpdate != nil {
-				fmt.Println(errUpdate)
+			errAdd := activityRepo.Add(activity)
+			if errAdd != nil {
+				fmt.Println(errAdd)
 				os.Exit(1)
 			}
 		},

@@ -1,0 +1,18 @@
+[
+  {
+    "create": "activities"
+  },
+  {
+    "createIndexes": "activities",
+    "indexes": [
+      {
+        "key": {
+          "Alias": 1,
+          "Name": 1
+        },
+        "name": "activities_key_and_alias_sort_asc",
+        "unique": true
+      }
+    ]
+  }
+]

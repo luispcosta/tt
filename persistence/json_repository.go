@@ -183,6 +183,11 @@ func (repo *JSONActivityRepository) List() []core.Activity {
 	return activities
 }
 
+// SchemaMigrate no schema migrations on a bare bones json repository
+func (repo *JSONActivityRepository) SchemaMigrate(direction string) error {
+	return nil
+}
+
 // Delete deletes an activity via a name (that needs to match a file name). If the files was deleted with success, then no error is returned.
 func (repo *JSONActivityRepository) Delete(activityName string) error {
 	if repo.activityExists(activityName) {
@@ -530,4 +535,12 @@ func (repo *JSONActivityRepository) activityFilePath(activityNameOrAlias string)
 
 func (repo *JSONActivityRepository) activityFilePathOnDisk(activityName string) string {
 	return fmt.Sprintf("%s%s%s.json", repo.Config.UserDataLocation+repo.DataFolder, string(os.PathSeparator), strings.ToLower(activityName))
+}
+
+func (repo *JSONActivityRepository) Shutdown() error {
+	return nil
+}
+
+func (repo *JSONActivityRepository) Add(activity core.Activity) error {
+	return nil
 }
