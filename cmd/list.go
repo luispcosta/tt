@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/luispcosta/go-tt/core"
 	"github.com/spf13/cobra"
@@ -15,7 +16,12 @@ func NewListCommand(activityRepo core.ActivityRepository) *cobra.Command {
 		Long:  "Lists all the current registered activities in the system",
 		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
-			activities := activityRepo.List()
+			activities, err := activityRepo.List()
+			if err != nil {
+				fmt.Println(err.Error())
+				os.Exit(1)
+			}
+
 			for _, act := range activities {
 				fmt.Println(act.ToPrintableString())
 			}

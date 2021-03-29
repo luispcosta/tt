@@ -1,5 +1,17 @@
 [
   {
     "create": "activity_logs"
+  },
+  {
+    "createIndexes": "activity_logs",
+    "indexes": [
+      {
+        "key": {
+          "ActivityID": 1,
+          "Date": 1
+        },
+        "name": "activity_logs_idx_on_key_and_date"
+      }
+    ]
   }
 ]

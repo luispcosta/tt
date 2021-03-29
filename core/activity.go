@@ -5,13 +5,16 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // Activity represents an activity done by the user is some point in time
 type Activity struct {
-	Name        string
-	Alias       string
-	Description string
+	ID          primitive.ObjectID `bson:"_id"`
+	Name        string             `json:"name""`
+	Alias       string             `json:"alias""`
+	Description string             `json:"description"`
 }
 
 // HasAlias returns true if the activity has an alias defined on it
