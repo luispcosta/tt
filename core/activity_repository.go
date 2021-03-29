@@ -5,7 +5,7 @@ type ActivityRepository interface {
 	Initialize() error
 	Shutdown() error
 	Add(Activity) error
-	Update(Activity) error
+	Update(string, UpdateActivity) error
 	List() ([]Activity, error)
 	Delete(string) error
 	Start(Activity) error

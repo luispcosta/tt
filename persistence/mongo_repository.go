@@ -78,7 +78,18 @@ func (repo *MongoRepository) Find(activityNameOrAlias string) (*core.Activity, e
 	return activity, nil
 }
 
-func (repo *MongoRepository) Update(activity core.Activity) error {
+func (repo *MongoRepository) Update(activityNameOrAlias string, updateOp core.UpdateActivity) error {
+	activity, err := repo.Find(activityNameOrAlias)
+	if err != nil {
+		return err
+	}
+
+	updateOp.Visit(activity)
+	updateStmt := bson.M{"$set": bson.D{{"Name", activity.Name}, {"Description", activity.Description}}}
+	_, err = repo.activityCollection().UpdateOne(repo.Ctx, bson.D{{"_id", activity.ID}}, updateStmt)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 

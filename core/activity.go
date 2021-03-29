@@ -17,6 +17,44 @@ type Activity struct {
 	Description string             `json:"description"`
 }
 
+type UpdateActivity interface {
+	Visit(*Activity)
+}
+
+type UpdateActivityDescription struct {
+	Desc string
+}
+
+func (upd UpdateActivityDescription) Visit(act *Activity) {
+	act.Description = upd.Desc
+}
+
+type UpdateActivityName struct {
+	Name string
+}
+
+func (upd UpdateActivityName) Visit(act *Activity) {
+	act.Name = upd.Name
+}
+
+type UpdateActivityNameAndDescription struct {
+	Name string
+	Desc string
+}
+
+func (upd UpdateActivityNameAndDescription) Visit(act *Activity) {
+	updName := UpdateActivityName{Name: upd.Name}
+	updDesc := UpdateActivityDescription{Desc: upd.Desc}
+	updName.Visit(act)
+	updDesc.Visit(act)
+}
+
+type NoActivityUpdate struct{}
+
+func (upd NoActivityUpdate) Visit(act *Activity) {
+
+}
+
 // HasAlias returns true if the activity has an alias defined on it
 func (activity *Activity) HasAlias() bool {
 	return activity.Alias != ""
