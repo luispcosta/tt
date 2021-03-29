@@ -40,10 +40,7 @@ func Execute() {
 	rootCmd.AddCommand(NewDeleteCommand(repo))
 	rootCmd.AddCommand(NewStartCommand(repo))
 	rootCmd.AddCommand(NewStopCommand(repo))
-	rootCmd.AddCommand(NewPurgeCommand(repo))
-	rootCmd.AddCommand(NewBackupCommand(repo))
 	rootCmd.AddCommand(NewReportCommand(repo))
-	rootCmd.AddCommand(NewRestoreCommand(repo))
 	rootCmd.AddCommand(NewMigrateCommand(repo))
 
 	if err := rootCmd.Execute(); err != nil {

@@ -154,18 +154,6 @@ func (repo *MongoRepository) Stop(activity core.Activity) error {
 	return nil
 }
 
-func (repo *MongoRepository) Purge() error {
-	return nil
-}
-
-func (repo *MongoRepository) Backup(destination string) (string, error) {
-	return "", nil
-}
-
-func (repo *MongoRepository) Restore(restoreFilePath string) error {
-	return nil
-}
-
 func (repo *MongoRepository) activityCollection() *mongo.Collection {
 	return repo.Database.Collection("activities")
 }

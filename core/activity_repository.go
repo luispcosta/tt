@@ -11,8 +11,5 @@ type ActivityRepository interface {
 	Start(Activity) error
 	Stop(Activity) error
 	Find(string) (*Activity, error)
-	Purge() error
-	Backup(string) (string, error)
-	Restore(string) error
 	SchemaMigrate(string) error
 }
