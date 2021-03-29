@@ -2,6 +2,7 @@ package persistence
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strconv"
 	"time"
@@ -81,8 +82,23 @@ func (repo *MongoRepository) Update(activity core.Activity) error {
 	return nil
 }
 
-func (repo *MongoRepository) Delete(activityName string) error {
-	return nil
+func (repo *MongoRepository) Delete(activityNameOrAlias string) error {
+	res, err := repo.activityCollection().DeleteOne(repo.Ctx, bson.D{{"Name", activityNameOrAlias}})
+	if err != nil {
+		return err
+	}
+	if res.DeletedCount == 0 {
+		res, err = repo.activityCollection().DeleteOne(repo.Ctx, bson.D{{"Alias", activityNameOrAlias}})
+		if err != nil {
+			return err
+		}
+		if res.DeletedCount == 0 {
+			return errors.New("activity not found")
+		}
+		return nil
+	} else {
+		return nil
+	}
 }
 
 func (repo *MongoRepository) List() ([]core.Activity, error) {
