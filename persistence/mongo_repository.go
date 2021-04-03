@@ -165,6 +165,48 @@ func (repo *MongoRepository) Stop(activity core.Activity) error {
 	return nil
 }
 
+func (repo *MongoRepository) LogsForDay(day time.Time) (core.DayLogs, error) {
+	d := utils.TimeToStandardFormat(day)
+	cursor, err := repo.activityLogCollection().Find(repo.Ctx, bson.D{{"Date", d}})
+
+	if err != nil {
+		return core.DayLogs{}, err
+	}
+
+	defer cursor.Close(repo.Ctx)
+
+	var result core.DayLogs = make(core.DayLogs)
+	for cursor.Next(repo.Ctx) {
+		var log core.ActivityLog
+		errDecode := cursor.Decode(&log)
+		if errDecode != nil {
+			return result, errDecode
+		}
+
+		var activity core.Activity
+		errFindAct := repo.activityCollection().FindOne(repo.Ctx, bson.D{{"_id", log.ActivityID}}).Decode(&activity)
+		if errFindAct != nil {
+			continue
+		}
+
+		if log.IsDone() {
+			if logsInDayForActivity, ok := result[activity]; ok {
+				logsInDayForActivity = append(logsInDayForActivity, log)
+				result[activity] = logsInDayForActivity
+			} else {
+				result[activity] = []core.ActivityLog{}
+				result[activity] = append(result[activity], log)
+			}
+		}
+	}
+
+	if err := cursor.Err(); err != nil {
+		return result, err
+	}
+
+	return result, nil
+}
+
 func (repo *MongoRepository) activityCollection() *mongo.Collection {
 	return repo.Database.Collection("activities")
 }
@@ -174,7 +216,5 @@ func (repo *MongoRepository) activityLogCollection() *mongo.Collection {
 }
 
 func (repo *MongoRepository) activityToBson(activity core.Activity) bson.D {
-	fmt.Println("Would like to add")
-	fmt.Println(bson.D{{"Name", activity.Name}, {"Alias", activity.Alias}, {"Description", activity.Description}})
 	return bson.D{{"Name", activity.Name}, {"Alias", activity.Alias}, {"Description", activity.Description}}
 }

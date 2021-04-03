@@ -50,7 +50,7 @@ func PeriodFromKeyWord(keyword string) Period {
 	var sd time.Time
 	switch strings.ToLower(keyword) {
 	case lastDayPeriod:
-		sd = now.AddDate(0, 0, -1)
+		sd = now.AddDate(0, 0, 0)
 	case lastWeekPeriod:
 		sd = now.AddDate(0, 0, -7)
 	case lastMonthPeriod:
@@ -62,6 +62,22 @@ func PeriodFromKeyWord(keyword string) Period {
 	}
 
 	return Period{Sd: sd, Ed: ed}
+}
+
+func (period *Period) ForEachDay(fn func(time.Time) error) {
+	if period.NumberOfDays() == 1 {
+		fn(period.Sd)
+	} else {
+		i := 0
+		for {
+			nextDay := period.Sd.AddDate(0, 0, i)
+			if nextDay == period.Ed.AddDate(0, 0, 1) {
+				break
+			}
+			fn(nextDay)
+			i += 1
+		}
+	}
 }
 
 // AllowedPeriodFixedTimeFrames returns an array of allowed period fixed time frames

@@ -1,5 +1,7 @@
 package core
 
+import "time"
+
 // ActivityRepository is the generic interface that exposes methods to create and read activities from a store.
 type ActivityRepository interface {
 	Initialize() error
@@ -12,4 +14,5 @@ type ActivityRepository interface {
 	Stop(Activity) error
 	Find(string) (*Activity, error)
 	SchemaMigrate(string) error
+	LogsForDay(time.Time) (DayLogs, error)
 }

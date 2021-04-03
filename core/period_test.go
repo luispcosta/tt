@@ -168,7 +168,7 @@ func TestPeriodFromKeyWordDay(t *testing.T) {
 		t.Error("Invalid period created for keyword 'day' (wrong month)")
 	}
 
-	if sdDay != currentDay-1 {
+	if sdDay != currentDay {
 		t.Error("Invalid period created for keyword 'day' (wrong sd day)")
 	}
 
