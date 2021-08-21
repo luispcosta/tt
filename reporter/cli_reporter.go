@@ -2,10 +2,8 @@ package reporter
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/luispcosta/go-tt/core"
-	"github.com/luispcosta/go-tt/utils"
 )
 
 // CliReporter is an activity reporter that presents activity information in the standard out
@@ -38,7 +36,7 @@ func (reporter *CliReporter) Initialize(repo core.ActivityRepository, period cor
 
 // ProduceReport creates a new cli report in the given period
 func (reporter *CliReporter) ProduceReport() error {
-	reporter.Period.ForEachDay(func(d time.Time) error {
+	/*reporter.Period.ForEachDay(func(d time.Time) error {
 		header := fmt.Sprintf("Day %s: \n", utils.TimeToStandardFormat(d))
 		activityLogs, err := reporter.Repo.LogsForDay(d)
 		if err != nil {
@@ -49,7 +47,7 @@ func (reporter *CliReporter) ProduceReport() error {
 		if len(activityLogs) == 0 {
 			content = "\t\tNo activities found for this day"
 		} else {
-			for act, logs := range activityLogs {
+			for i := range activityLogs {
 				content += fmt.Sprintf("\tActivity %s", act.Name)
 				for _, log := range logs {
 					content += fmt.Sprintf(" %vh", log.Duration())
@@ -64,5 +62,5 @@ func (reporter *CliReporter) ProduceReport() error {
 		return nil
 	})
 
-	return nil
+	return nil*/
 }

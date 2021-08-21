@@ -41,7 +41,6 @@ func Execute() {
 	rootCmd.AddCommand(NewStartCommand(repo))
 	rootCmd.AddCommand(NewStopCommand(repo))
 	rootCmd.AddCommand(NewReportCommand(repo))
-	rootCmd.AddCommand(NewMigrateCommand(repo))
 	rootCmd.AddCommand(NewUpdateCommand((repo)))
 
 	if err := rootCmd.Execute(); err != nil {

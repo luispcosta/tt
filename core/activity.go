@@ -9,9 +9,10 @@ import (
 
 // Activity represents an activity done by the user is some point in time
 type Activity struct {
-	Name        string             `json:"name""`
-	Alias       string             `json:"alias""`
-	Description string             `json:"description"`
+	Name        string `json:"name""`
+	Alias       string `json:"alias""`
+	Description string `json:"description"`
+	Id          int    `json:"id"`
 }
 
 type UpdateActivity interface {

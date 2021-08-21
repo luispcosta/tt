@@ -10,8 +10,8 @@ import (
 
 // CalcActivityLogDuration calculates the duration of an activity log
 func CalcActivityLogDuration(log core.ActivityLog) (float64, error) {
-	startTime := log.Start
-	endTime := log.End
+	startTime := log.StartedAt.Unix()
+	endTime := log.StoppedAt.Unix()
 
 	start := time.Unix(startTime, 0)
 	end := time.Unix(endTime, 0)

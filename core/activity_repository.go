@@ -7,12 +7,11 @@ type ActivityRepository interface {
 	Initialize() error
 	Shutdown() error
 	Add(Activity) error
-	Update(string, UpdateActivity) error
-	List() ([]Activity, error)
 	Delete(string) error
-	Start(Activity) error
-	Stop(Activity) error
+	List() ([]Activity, error)
+	Update(string, UpdateActivity) error
 	Find(string) (*Activity, error)
-	SchemaMigrate(string) error
-	LogsForDay(time.Time) (DayLogs, error)
+	Start(Activity) error
+	LogsForDay(time.Time) ([]ActivityLog, error)
+	Stop(Activity) error
 }
