@@ -5,13 +5,10 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
-
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // Activity represents an activity done by the user is some point in time
 type Activity struct {
-	ID          primitive.ObjectID `bson:"_id"`
 	Name        string             `json:"name""`
 	Alias       string             `json:"alias""`
 	Description string             `json:"description"`

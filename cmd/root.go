@@ -21,7 +21,7 @@ var rootCmd = &cobra.Command{
 
 // Execute executes the root commmand.
 func Execute() {
-	repo, err := persistence.NewMongoRepository()
+	repo, err := persistence.NewSqliteRepository()
 
 	if err != nil {
 		fmt.Printf("Could not connect to mongo with error: %s", err.Error())
