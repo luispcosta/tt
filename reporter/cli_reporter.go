@@ -2,8 +2,10 @@ package reporter
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/luispcosta/go-tt/core"
+	"github.com/luispcosta/go-tt/utils"
 )
 
 // CliReporter is an activity reporter that presents activity information in the standard out
@@ -36,22 +38,25 @@ func (reporter *CliReporter) Initialize(repo core.ActivityRepository, period cor
 
 // ProduceReport creates a new cli report in the given period
 func (reporter *CliReporter) ProduceReport() error {
-	/*reporter.Period.ForEachDay(func(d time.Time) error {
-		header := fmt.Sprintf("Day %s: \n", utils.TimeToStandardFormat(d))
-		activityLogs, err := reporter.Repo.LogsForDay(d)
-		if err != nil {
-			return err
-		}
+	logs, err := reporter.Repo.LogsForPeriod(reporter.Period)
+	if err != nil {
+		return err
+	}
+
+	reporter.Period.ForEachDay(func(d time.Time) error {
+		date := d.Format("2006-01-02")
+		header := fmt.Sprintf("Day %s: \n", date)
+		activityLogs := logs[date]
 
 		var content string
 		if len(activityLogs) == 0 {
-			content = "\t\tNo activities found for this day"
+			content = "  No activities found for this day"
 		} else {
 			for i := range activityLogs {
-				content += fmt.Sprintf("\tActivity %s", act.Name)
-				for _, log := range logs {
-					content += fmt.Sprintf(" %vh", log.Duration())
-				}
+				entry := activityLogs[i]
+
+				content += fmt.Sprintf("  Activity %s", entry.Activity.Name)
+				content += fmt.Sprintf(" %v", utils.SecondsToHuman(entry.Duration))
 				content += "\n"
 			}
 		}
@@ -62,5 +67,5 @@ func (reporter *CliReporter) ProduceReport() error {
 		return nil
 	})
 
-	return nil*/
+	return nil
 }

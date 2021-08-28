@@ -179,11 +179,30 @@ func (repo *SqliteRepository) Update(activityNameOrAlias string, updateOp core.U
 	return nil
 }
 
-// LogsForDay returns a list of activity logs for a given day
-func (repo *SqliteRepository) LogsForDay(day time.Time) ([]core.ActivityLog, error) {
-	d := utils.TimeToStandardFormat(day)
+// LogsForPeriod returns a list of activity logs for a given period
+func (repo *SqliteRepository) LogsForPeriod(period core.Period) (map[string][]core.ActivityDurationDayAggregation, error) {
+	stmt := `
+		SELECT activities.id,
+			   activities.name,
+			   activities.alias,
+			   activities.description,
+			   agg.day,
+			   agg.duration_in_seconds
+		FROM (
+			SELECT
+				activity_id,
+				day,
+				SUM(CAST((JulianDay(stopped_at) - JulianDay(started_at)) * 24 * 60 * 60 AS integer)) AS duration_in_seconds
+			FROM
+				activity_logs
+			WHERE
+				day BETWEEN '%s' AND '%s'
+			GROUP BY activity_id, day
+		) AS agg, activities
+		WHERE activities.id = agg.activity_id;
+	`
 
-	query := fmt.Sprintf("SELECT id, day, started_at, stopped_at FROM activity_logs WHERE day = '%s'", d)
+	query := fmt.Sprintf(stmt, period.Sd, period.Ed)
 	rows, err := repo.db.Query(query)
 	if err != nil {
 		return nil, err
@@ -191,19 +210,29 @@ func (repo *SqliteRepository) LogsForDay(day time.Time) ([]core.ActivityLog, err
 
 	defer rows.Close()
 
-	var logs []core.ActivityLog
+	result := make(map[string][]core.ActivityDurationDayAggregation)
 
 	for rows.Next() {
-		var logId int
-		var logDay string
-		var startedAt time.Time
-		var stoppedAt time.Time
-		err = rows.Scan(&logId, &logDay, &startedAt, &stoppedAt)
+		var activityId int
+		var activityName string
+		var activityAlias string
+		var activityDescription string
+		var day time.Time
+		var durationInSeconds int
+
+		err = rows.Scan(&activityId, &activityName, &activityAlias, &activityDescription, &day, &durationInSeconds)
 		if err != nil {
 			return nil, err
 		}
 
-		logs = append(logs, core.ActivityLog{Id: logId, Date: logDay, StartedAt: &startedAt, StoppedAt: &stoppedAt})
+		date := day.Format("2006-01-02")
+
+		if err != nil {
+			return nil, err
+		}
+
+		activity := core.Activity{Id: activityId, Name: activityName, Alias: activityAlias, Description: activityDescription}
+		result[date] = append(result[date], core.ActivityDurationDayAggregation{Activity: activity, Date: date, Duration: durationInSeconds})
 	}
 
 	err = rows.Err()
@@ -212,7 +241,7 @@ func (repo *SqliteRepository) LogsForDay(day time.Time) ([]core.ActivityLog, err
 		return nil, err
 	}
 
-	return logs, nil
+	return result, nil
 }
 
 // Start starts tracking the time for an activity
@@ -236,7 +265,8 @@ func (repo *SqliteRepository) Start(activity core.Activity) error {
 		return fmt.Errorf("you are already tracking the activity '%s', please stop that one before starting a new one", activityStartedAndNotStopped.Name)
 	}
 
-	sql := fmt.Sprintf("INSERT INTO activity_logs (day, started_at, activity_id) VALUES (DATE(), %v, %v)", repo.Clock.Now().Unix(), activity.Id)
+	startTime := utils.TimeToStandardDateTimeFormat(repo.Clock.Now())
+	sql := fmt.Sprintf("INSERT INTO activity_logs (day, started_at, activity_id) VALUES (DATE(), '%v', '%v')", startTime, activity.Id)
 	_, err = repo.db.Exec(sql)
 	if err != nil {
 		return err
@@ -269,23 +299,20 @@ func (repo *SqliteRepository) Stop(activity core.Activity) error {
 		return fmt.Errorf("you are already tracking the activity '%s', please stop that one before starting a new one", activityStartedAndNotStopped.Name)
 	}
 
-	var logForActivityToday *core.ActivityLog
+	var logIncompleteToday *core.ActivityLog
 	for i := range activityLogs {
-		if activityLogs[i].Activity.Id == activity.Id {
-			logForActivityToday = &activityLogs[i]
+		if activityLogs[i].Activity.Id == activity.Id && (activityLogs[i].StartedAt != nil && activityLogs[i].StoppedAt == nil) {
+			logIncompleteToday = &activityLogs[i]
 			break
 		}
 	}
 
-	if logForActivityToday == nil {
+	if logIncompleteToday == nil {
 		return fmt.Errorf("you are not tracking this activity. Please start tracking it with `tt start %s`", activity.Name)
 	}
 
-	if logForActivityToday.StoppedAt != nil {
-		return errors.New("you have already stopped this activity")
-	}
-
-	updateQuery := fmt.Sprintf("UPDATE activity_logs SET stopped_at = %v WHERE id = %v", repo.Clock.Now().Unix(), logForActivityToday.Id)
+	stopTime := utils.TimeToStandardDateTimeFormat(repo.Clock.Now())
+	updateQuery := fmt.Sprintf("UPDATE activity_logs SET stopped_at = '%v' WHERE id = %v", stopTime, logIncompleteToday.Id)
 	res, err := repo.db.Exec(updateQuery)
 
 	if err != nil {
@@ -309,10 +336,10 @@ func (repo *SqliteRepository) activityLogStartedAt(instant time.Time) ([]core.Ac
 	date := instant.Format("2006-01-02")
 
 	query := `
-		SELECT activity_logs.id, 
-			   activity_logs.day, 
-			   activity_logs.started_at, 
-			   activity_logs.stopped_at, 
+		SELECT activity_logs.id,
+			   activity_logs.day,
+			   activity_logs.started_at,
+			   activity_logs.stopped_at,
 			   activities.id,
 			   activities.name,
 			   activities.alias,

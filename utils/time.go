@@ -1,31 +1,55 @@
 package utils
 
 import (
-	"fmt"
+	"math"
 	"strconv"
 	"time"
-
-	"github.com/luispcosta/go-tt/core"
 )
 
-// CalcActivityLogDuration calculates the duration of an activity log
-func CalcActivityLogDuration(log core.ActivityLog) (float64, error) {
-	startTime := log.StartedAt.Unix()
-	endTime := log.StoppedAt.Unix()
+// SecondsToHuman returns a human description of a duration in seconds
+// Taken from: https://www.socketloop.com/tutorials/golang-convert-seconds-to-human-readable-time-format-example
+func SecondsToHuman(input int) (result string) {
+	years := math.Floor(float64(input) / 60 / 60 / 24 / 7 / 30 / 12)
+	seconds := input % (60 * 60 * 24 * 7 * 30 * 12)
+	months := math.Floor(float64(seconds) / 60 / 60 / 24 / 7 / 30)
+	seconds = input % (60 * 60 * 24 * 7 * 30)
+	weeks := math.Floor(float64(seconds) / 60 / 60 / 24 / 7)
+	seconds = input % (60 * 60 * 24 * 7)
+	days := math.Floor(float64(seconds) / 60 / 60 / 24)
+	seconds = input % (60 * 60 * 24)
+	hours := math.Floor(float64(seconds) / 60 / 60)
+	seconds = input % (60 * 60)
+	minutes := math.Floor(float64(seconds) / 60)
+	seconds = input % 60
 
-	start := time.Unix(startTime, 0)
-	end := time.Unix(endTime, 0)
+	if years > 0 {
+		result = plural(int(years), "year") + plural(int(months), "month") + plural(int(weeks), "week") + plural(int(days), "day") + plural(int(hours), "hour") + plural(int(minutes), "minute") + plural(int(seconds), "second")
+	} else if months > 0 {
+		result = plural(int(months), "month") + plural(int(weeks), "week") + plural(int(days), "day") + plural(int(hours), "hour") + plural(int(minutes), "minute") + plural(int(seconds), "second")
+	} else if weeks > 0 {
+		result = plural(int(weeks), "week") + plural(int(days), "day") + plural(int(hours), "hour") + plural(int(minutes), "minute") + plural(int(seconds), "second")
+	} else if days > 0 {
+		result = plural(int(days), "day") + plural(int(hours), "hour") + plural(int(minutes), "minute") + plural(int(seconds), "second")
+	} else if hours > 0 {
+		result = plural(int(hours), "hour") + plural(int(minutes), "minute") + plural(int(seconds), "second")
+	} else if minutes > 0 {
+		result = plural(int(minutes), "minute") + plural(int(seconds), "second")
+	} else {
+		result = plural(int(seconds), "second")
+	}
 
-	duration := end.Sub(start).Seconds()
-	return duration, nil
+	return
 }
 
-// SecondsToHours returns a string with the representation of a number that is in seconds, to hours
-func SecondsToHours(seconds float64) string {
-	return fmt.Sprintf("%.2f", seconds/3600)
+func TimeToStandardDateTimeFormat(time time.Time) string {
+	return time.Format("2006-01-02 15:04:05")
 }
 
-func TimeToStandardFormat(time time.Time) string {
-	year, month, day := time.Date()
-	return fmt.Sprintf("%s-%s-%s", strconv.Itoa(year), strconv.Itoa(int(month)), strconv.Itoa(day))
+func plural(count int, singular string) (result string) {
+	if (count == 1) || (count == 0) {
+		result = strconv.Itoa(count) + " " + singular + " "
+	} else {
+		result = strconv.Itoa(count) + " " + singular + "s "
+	}
+	return
 }
