@@ -16,6 +16,7 @@ func NewStartCommand(activityRepo core.ActivityRepository) *cobra.Command {
 		Long:  "Starts counting the time for an activity",
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
+			ExitIfAppNotConfigured()
 			activityNameOrAlias := args[0]
 			activity, err := activityRepo.Find(activityNameOrAlias)
 			if err != nil {

@@ -16,6 +16,7 @@ func NewListCommand(activityRepo core.ActivityRepository) *cobra.Command {
 		Long:  "Lists all the current registered activities in the system",
 		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
+			ExitIfAppNotConfigured()
 			activities, err := activityRepo.List()
 			if err != nil {
 				fmt.Println(err.Error())

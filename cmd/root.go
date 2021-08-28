@@ -1,10 +1,10 @@
 package cmd
 
 import (
-	"bufio"
 	"fmt"
 	"os"
 
+	"github.com/luispcosta/go-tt/config"
 	"github.com/luispcosta/go-tt/persistence"
 	"github.com/spf13/cobra"
 )
@@ -19,8 +19,17 @@ var rootCmd = &cobra.Command{
 	`,
 }
 
+func ExitIfAppNotConfigured() {
+	config := config.NewConfig()
+	if !config.AlreadySetup() {
+		fmt.Println("Application not yet configured. Please configure with `tt init`")
+		os.Exit(1)
+	}
+}
+
 // Execute executes the root commmand.
 func Execute() {
+	configuration := config.NewConfig()
 	repo, err := persistence.NewSqliteRepository()
 
 	if err != nil {
@@ -28,13 +37,14 @@ func Execute() {
 		os.Exit(1)
 	}
 
-	errorInitRepo := repo.Initialize()
+	errorInitRepo := repo.Initialize(configuration)
 
 	if errorInitRepo != nil {
 		fmt.Printf("Error initializing mongo with error: %s", errorInitRepo.Error())
 		os.Exit(1)
 	}
 
+	rootCmd.AddCommand(NewInitCommand(repo))
 	rootCmd.AddCommand(NewAddCommand(repo))
 	rootCmd.AddCommand(NewListCommand(repo))
 	rootCmd.AddCommand(NewDeleteCommand(repo))
@@ -47,12 +57,4 @@ func Execute() {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-}
-
-func userAllowedToContinue(confirmationMsg string) bool {
-	scanner := bufio.NewScanner(os.Stdin)
-	fmt.Print(confirmationMsg)
-	scanner.Scan()
-	text := scanner.Text()
-	return text == "y"
 }

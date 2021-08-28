@@ -27,7 +27,7 @@ func NewReportCommand(activityRepo core.ActivityRepository) *cobra.Command {
 			If only 1 argument is provided, than it is assumed that the user wants a report in a fixed time frame. This argument represents
 			that time frame. Accepted values are: %v. All time frames are relative to the current day.
 
-			If two arguments are passed, they are used to construct a specific time frame period. 
+			If two arguments are passed, they are used to construct a specific time frame period.
 			For example: $ go-tt report '2020-10-10' '2020-10-20'
 
 			You can also provide an additional flag (-f <FORMAT> or --format <FORMAT>) to specify the report format. The default format is printing
@@ -35,6 +35,7 @@ func NewReportCommand(activityRepo core.ActivityRepository) *cobra.Command {
 		`, core.AllowedPeriodFixedTimeFrames(), reporter.AllowedFormatsCollection()),
 		Args: cobra.RangeArgs(1, 2),
 		Run: func(cmd *cobra.Command, args []string) {
+			ExitIfAppNotConfigured()
 			var period core.Period
 			if len(args) == 2 {
 				parsedPeriod, errPeriod := core.PeriodFromDateStrings(args[0], args[1])

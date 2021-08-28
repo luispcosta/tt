@@ -23,6 +23,7 @@ func NewAddCommand(activityRepo core.ActivityRepository) *cobra.Command {
 		Long:  "Registers a new activity to be tracked. You can also add an alias to the activity. Case is ignoring for the activity name.",
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
+			ExitIfAppNotConfigured()
 			alias := cmd.Flag("alias").Value.String()
 			description := cmd.Flag("desc").Value.String()
 			activity := core.Activity{Name: args[0], Alias: alias, Description: description}

@@ -17,6 +17,7 @@ func NewDeleteCommand(activityRepo core.ActivityRepository) *cobra.Command {
 		Long:  "Deletes an activity, if it exists, via its name (case insensitive).",
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
+			ExitIfAppNotConfigured()
 			activityName := args[0]
 			errDelete := activityRepo.Delete(activityName)
 			if errDelete != nil {

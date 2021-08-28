@@ -16,6 +16,7 @@ func NewStopCommand(activityRepo core.ActivityRepository) *cobra.Command {
 		Long:  "Stops counting the time for an activity",
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
+			ExitIfAppNotConfigured()
 			activityName := args[0]
 			activity, err := activityRepo.Find(activityName)
 			if err != nil {

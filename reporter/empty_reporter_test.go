@@ -1,15 +1,6 @@
 package reporter
 
-import (
-	"testing"
-
-	"github.com/luispcosta/go-tt/configuration"
-	"github.com/luispcosta/go-tt/core"
-	"github.com/luispcosta/go-tt/persistence"
-	"github.com/luispcosta/go-tt/utils"
-)
-
-func TestEmptyReporter(t *testing.T) {
+/*func TestEmptyReporter(t *testing.T) {
 	reporter := NewEmptyReporter()
 	period, errPeriod := core.PeriodFromDateStrings("2020-10-10", "2020-10-11")
 	if errPeriod != nil {
@@ -43,4 +34,4 @@ func TestEmptyReporter(t *testing.T) {
 	} else {
 		t.Error("Should have raised an error trying to produce a not implemented reporter")
 	}
-}
+}*/

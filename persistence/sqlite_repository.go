@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/luispcosta/go-tt/config"
 	"github.com/luispcosta/go-tt/core"
 	"github.com/luispcosta/go-tt/utils"
 	_ "github.com/mattn/go-sqlite3"
@@ -20,21 +21,23 @@ type SqliteRepository struct {
 
 // NewSqliteRepository creates a new SQLite repository struct
 func NewSqliteRepository() (*SqliteRepository, error) {
+
 	return &SqliteRepository{
-		dbFile: "./gott.db",
-		Clock:  utils.NewLiveClock(),
+		Clock: utils.NewLiveClock(),
 	}, nil
 }
 
 // Initialize initializes the connection to the database
-func (repo *SqliteRepository) Initialize() error {
-	db, err := sql.Open("sqlite3", repo.dbFile)
+func (repo *SqliteRepository) Initialize(config config.Config) error {
+	dbFilePath := fmt.Sprintf("%sgott.db", config.UserDataLocation)
+	db, err := sql.Open("sqlite3", dbFilePath)
 
 	if err != nil {
 		return nil
 	}
 
 	repo.db = db
+	repo.dbFile = dbFilePath
 	return nil
 }
 
@@ -43,7 +46,6 @@ func (repo *SqliteRepository) Shutdown() error {
 	return repo.db.Close()
 }
 
-// TODO: Adding two activities with the same name.
 // Add adds a new activity to the database
 func (repo *SqliteRepository) Add(activity core.Activity) error {
 	sql := fmt.Sprintf("INSERT INTO activities (name, alias, description) VALUES ('%s', '%s', '%s')", activity.Name, activity.Alias, activity.Description)

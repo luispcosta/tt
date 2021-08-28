@@ -10,7 +10,8 @@ This is a pet project to quickly track activities and see how much time you spen
 # Running SQLITE 3 migrations
 
 * Make sure you have `sqlite3` installed.
-* From the root folder of this project, run `sqlite3 gott.db` in your terminal to create a new database called `gott`.
+* Init the application with `tt init`.
+* From the root folder of this project, run `sqlite3 ~/.gott/gott.db` in your terminal to create a new database called `gott`.
 * Run `.read migrations/001_create_activities.up.sql` inside the `sqlite3` prompt.
 * Run `.read migrations/002_create_activity_logs.up.sql` inside the sqlite3 prompt.
 

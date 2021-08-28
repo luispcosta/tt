@@ -22,6 +22,7 @@ func NewUpdateCommand(activityRepo core.ActivityRepository) *cobra.Command {
 		Short: "Updates the metadata of an activity. Only the name and description can be updated.",
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
+			ExitIfAppNotConfigured()
 			name := cmd.Flag("name")
 			description := cmd.Flag("desc")
 			var updateOp core.UpdateActivity
