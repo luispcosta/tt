@@ -204,7 +204,7 @@ func (repo *SqliteRepository) LogsForPeriod(period core.Period) (map[string][]co
 		WHERE activities.id = agg.activity_id;
 	`
 
-	query := fmt.Sprintf(stmt, period.Sd, period.Ed)
+	query := fmt.Sprintf(stmt, period.StartDateDay(), period.EndDateDay())
 	rows, err := repo.db.Query(query)
 	if err != nil {
 		return nil, err

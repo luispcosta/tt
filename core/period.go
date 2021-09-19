@@ -80,6 +80,14 @@ func (period *Period) ForEachDay(fn func(time.Time) error) {
 	}
 }
 
+func (period *Period) StartDateDay() string {
+	return period.Sd.Format("2006-01-02")
+}
+
+func (period *Period) EndDateDay() string {
+	return period.Ed.Format("2006-01-02")
+}
+
 // AllowedPeriodFixedTimeFrames returns an array of allowed period fixed time frames
 func AllowedPeriodFixedTimeFrames() []string {
 	return []string{lastDayPeriod, lastWeekPeriod, lastMonthPeriod, lastYearPeriod}
