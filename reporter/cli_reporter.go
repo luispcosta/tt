@@ -5,19 +5,22 @@ import (
 	"time"
 
 	"github.com/luispcosta/go-tt/core"
-	"github.com/luispcosta/go-tt/utils"
 )
 
 // CliReporter is an activity reporter that presents activity information in the standard out
 type CliReporter struct {
-	Period  core.Period
-	Repo    core.ActivityRepository
-	Printer func(...interface{}) (int, error)
+	Period         core.Period
+	Repo           core.ActivityRepository
+	Printer        func(...interface{}) (int, error)
+	DurationFormat core.DurationFormat
 }
 
 // NewCliReporter creates a new CLI reporter
 func NewCliReporter() *CliReporter {
-	cliReporter := CliReporter{Printer: fmt.Print}
+	cliReporter := CliReporter{
+		Printer:        fmt.Print,
+		DurationFormat: core.AutoDurationFormat{},
+	}
 	return &cliReporter
 }
 
@@ -34,6 +37,11 @@ func (reporter *CliReporter) Initialize(repo core.ActivityRepository, period cor
 	reporter.Repo = repo
 	reporter.Period = period
 	return nil
+}
+
+// SetDurationFormat sets the duration formatter
+func (reporter *CliReporter) SetDurationFormat(f core.DurationFormat) {
+	reporter.DurationFormat = f
 }
 
 // ProduceReport creates a new cli report in the given period
@@ -56,7 +64,7 @@ func (reporter *CliReporter) ProduceReport() error {
 				entry := activityLogs[i]
 
 				content += fmt.Sprintf("  Activity %s", entry.Activity.Name)
-				content += fmt.Sprintf(" %v", utils.SecondsToHuman(entry.Duration))
+				content += fmt.Sprintf(" %v", reporter.DurationFormat.Format(entry.Duration))
 				content += "\n"
 			}
 		}

@@ -23,3 +23,7 @@ func (reporter *EmptyReporter) Initialize(repo core.ActivityRepository, period c
 func (reporter *EmptyReporter) ProduceReport() error {
 	return utils.NewReportNotImplementedError()
 }
+
+// SetDurationFormat no-op
+func (reporter *EmptyReporter) SetDurationFormat(f core.DurationFormat) {
+}

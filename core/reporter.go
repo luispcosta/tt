@@ -4,4 +4,5 @@ package core
 type Reporter interface {
 	Initialize(ActivityRepository, Period) error
 	ProduceReport() error
+	SetDurationFormat(DurationFormat)
 }

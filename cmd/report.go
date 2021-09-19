@@ -11,8 +11,9 @@ import (
 )
 
 type reportCmd struct {
-	baseCmd *cobra.Command
-	format  string
+	baseCmd        *cobra.Command
+	format         string
+	durationFormat string
 }
 
 // NewReportCommand creates ativities reports
@@ -30,8 +31,13 @@ func NewReportCommand(activityRepo core.ActivityRepository) *cobra.Command {
 			If two arguments are passed, they are used to construct a specific time frame period.
 			For example: $ go-tt report '2020-10-10' '2020-10-20'
 
-			You can also provide an additional flag (-f <FORMAT> or --format <FORMAT>) to specify the report format. The default format is printing
+			You can provide an additional flag (-f <FORMAT> or --format <FORMAT>) to specify the report format. The default format is printing
 			the report to STDOUT. Allowed values are: %v
+
+			You can also provide an additional flag (-f <DURATION_FORMAT> or --durationFormat <DURATION_FORMAT>) to specify
+			how each activity duration is printed. The default duration format is 'auto', which prints durations to a human friendly format.
+			Example, an activity duration of 25204 seconds will be printed as "7 hours 0 minute 4 seconds".
+			Accepted values for this flag are 'a' (auto), 's' (seconds), 'm' (minutes) and 'h' (hours).
 		`, core.AllowedPeriodFixedTimeFrames(), reporter.AllowedFormatsCollection()),
 		Args: cobra.RangeArgs(1, 2),
 		Run: func(cmd *cobra.Command, args []string) {
@@ -53,16 +59,17 @@ func NewReportCommand(activityRepo core.ActivityRepository) *cobra.Command {
 			if !reporter.IsAllowedFormat(format) {
 				fmt.Printf("%s is not an allowed report format, check this command's help to see the allowed formats", format)
 				os.Exit(1)
+				return
 			}
-
+			durationFormatValue := strings.ToLower(cmd.Flag("durationFormat").Value.String())
+			durationFormat := core.ParseDurationFormat(durationFormatValue)
 			reporter := reporter.CreateReporter(format)
-
 			errInit := reporter.Initialize(activityRepo, period)
-
 			if errInit != nil {
 				fmt.Println(errInit)
 				os.Exit(1)
 			}
+			reporter.SetDurationFormat(durationFormat)
 
 			err := reporter.ProduceReport()
 			if err != nil {
@@ -74,6 +81,7 @@ func NewReportCommand(activityRepo core.ActivityRepository) *cobra.Command {
 
 	report := reportCmd{}
 	reportCommand.Flags().StringVarP(&report.format, "format", "f", "cli", "Report format")
+	reportCommand.Flags().StringVarP(&report.durationFormat, "durationFormat", "d", "auto", "Duration format")
 	report.baseCmd = reportCommand
 	return reportCommand
 }
