@@ -14,4 +14,5 @@ type ActivityRepository interface {
 	Start(Activity) error
 	LogsForPeriod(Period) (map[string][]ActivityDurationDayAggregation, error)
 	Stop(Activity) error
+	CurrentlyTrackedActivity() (*Activity, error)
 }

@@ -19,7 +19,7 @@ func NewInitCommand(activityRepo core.ActivityRepository) *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			config := config.NewConfig()
 			if config.AlreadySetup() {
-				fmt.Println("Already configuration, you can now use the application")
+				fmt.Println("Already configured, you can now use the application")
 			} else {
 				err := config.Setup()
 				if err != nil {

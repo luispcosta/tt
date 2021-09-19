@@ -248,19 +248,10 @@ func (repo *SqliteRepository) LogsForPeriod(period core.Period) (map[string][]co
 
 // Start starts tracking the time for an activity
 func (repo *SqliteRepository) Start(activity core.Activity) error {
-	activityLogs, err := repo.activityLogStartedAt(repo.Clock.Now())
+	activityStartedAndNotStopped, err := repo.CurrentlyTrackedActivity()
 
 	if err != nil {
 		return err
-	}
-
-	var activityStartedAndNotStopped *core.Activity
-
-	for i := range activityLogs {
-		if activityLogs[i].StartedAt != nil && activityLogs[i].StoppedAt == nil {
-			activityStartedAndNotStopped = &activityLogs[i].Activity
-			break
-		}
 	}
 
 	if activityStartedAndNotStopped != nil {
@@ -274,6 +265,29 @@ func (repo *SqliteRepository) Start(activity core.Activity) error {
 		return err
 	}
 	return nil
+}
+
+func (repo *SqliteRepository) CurrentlyTrackedActivity() (*core.Activity, error) {
+	activityLogs, err := repo.activityLogStartedAt(repo.Clock.Now())
+
+	if err != nil {
+		return nil, err
+	}
+
+	var activityStartedAndNotStopped *core.Activity
+
+	for i := range activityLogs {
+		if activityLogs[i].StartedAt != nil && activityLogs[i].StoppedAt == nil {
+			activityStartedAndNotStopped = &activityLogs[i].Activity
+			break
+		}
+	}
+
+	if activityStartedAndNotStopped != nil {
+		return activityStartedAndNotStopped, nil
+	}
+
+	return nil, nil
 }
 
 // Stop stops tracking the time for an activity
