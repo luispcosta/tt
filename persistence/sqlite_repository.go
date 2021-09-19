@@ -267,6 +267,55 @@ func (repo *SqliteRepository) Start(activity core.Activity) error {
 	return nil
 }
 
+// WipeLogsPeriodAndActivity deletes logs for a given activity and for a given period
+func (repo *SqliteRepository) WipeLogsPeriodAndActivity(period core.Period, activity *core.Activity) error {
+	sql := `
+		DELETE
+		FROM activity_logs
+		WHERE activity_id = %v AND day BETWEEN '%s' AND '%s';
+	`
+
+	query := fmt.Sprintf(sql, activity.Id, period.StartDateDay(), period.EndDateDay())
+	res, err := repo.db.Exec(query)
+
+	if err != nil {
+		return err
+	}
+
+	_, errWipe := res.RowsAffected()
+
+	if errWipe != nil {
+		return errWipe
+	}
+
+	return nil
+}
+
+// WipeLogsPeriodAndActivity deletes logs for a given period
+func (repo *SqliteRepository) WipeLogsPeriod(period core.Period) error {
+	sql := `
+		DELETE
+		FROM activity_logs
+		WHERE day BETWEEN '%s' AND '%s';
+	`
+
+	query := fmt.Sprintf(sql, period.StartDateDay(), period.EndDateDay())
+	res, err := repo.db.Exec(query)
+
+	if err != nil {
+		return err
+	}
+
+	_, errWipe := res.RowsAffected()
+
+	if errWipe != nil {
+		return errWipe
+	}
+
+	return nil
+}
+
+// CurrentlyTrackedActivity returns the activity beeing currently tracked, if any
 func (repo *SqliteRepository) CurrentlyTrackedActivity() (*core.Activity, error) {
 	activityLogs, err := repo.activityLogStartedAt(repo.Clock.Now())
 

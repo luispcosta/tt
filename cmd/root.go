@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/luispcosta/go-tt/config"
 	"github.com/luispcosta/go-tt/persistence"
@@ -25,6 +26,20 @@ func ExitIfAppNotConfigured() {
 		fmt.Println("Application not yet configured. Please configure with `tt init`")
 		os.Exit(1)
 	}
+}
+
+func AllowedToContinue() bool {
+	var input string
+	fmt.Printf("Do you want to continue with this operation? [y|n]: ")
+	_, err := fmt.Scanln(&input)
+	if err != nil {
+		panic(err)
+	}
+	input = strings.ToLower(input)
+	if input == "y" {
+		return true
+	}
+	return false
 }
 
 // Execute executes the root commmand.
@@ -53,6 +68,7 @@ func Execute() {
 	rootCmd.AddCommand(NewReportCommand(repo))
 	rootCmd.AddCommand(NewUpdateCommand((repo)))
 	rootCmd.AddCommand(NewCurrentCommand((repo)))
+	rootCmd.AddCommand(NewWipeCommand((repo)))
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
