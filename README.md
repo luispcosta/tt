@@ -22,3 +22,8 @@ You now have all the tables created. If you need to drop the activities table:
 If you need to drop the activity logs table:
 
 * `.read migrations/002_create_activity_logs.down.sql`
+
+# Commands
+
+To see a list of all the supported commands and how to use them, please run `tt help`. You can also
+run `tt COMMAND --help`
