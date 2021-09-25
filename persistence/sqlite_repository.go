@@ -19,6 +19,8 @@ type SqliteRepository struct {
 	Clock  utils.Clock
 }
 
+const DatabaseName = "gott.db"
+
 // NewSqliteRepository creates a new SQLite repository struct
 func NewSqliteRepository() (*SqliteRepository, error) {
 
@@ -29,7 +31,7 @@ func NewSqliteRepository() (*SqliteRepository, error) {
 
 // Initialize initializes the connection to the database
 func (repo *SqliteRepository) Initialize(config config.Config) error {
-	dbFilePath := fmt.Sprintf("%sgott.db", config.UserDataLocation)
+	dbFilePath := fmt.Sprintf("%s%s", config.UserDataLocation, DatabaseName)
 	db, err := sql.Open("sqlite3", dbFilePath)
 
 	if err != nil {
@@ -227,7 +229,7 @@ func (repo *SqliteRepository) LogsForPeriod(period core.Period) (map[string][]co
 			return nil, err
 		}
 
-		date := day.Format("2006-01-02")
+		date := day.Format(utils.DateFormat)
 
 		if err != nil {
 			return nil, err
@@ -398,7 +400,7 @@ func (repo *SqliteRepository) Stop(activity core.Activity) error {
 }
 
 func (repo *SqliteRepository) activityLogStartedAt(instant time.Time) ([]core.ActivityLog, error) {
-	date := instant.Format("2006-01-02")
+	date := instant.Format(utils.DateFormat)
 
 	query := `
 		SELECT activity_logs.id,

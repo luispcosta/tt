@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/luispcosta/go-tt/core"
+	"github.com/luispcosta/go-tt/utils"
 )
 
 // CliReporter is an activity reporter that presents activity information in the standard out
@@ -52,7 +53,7 @@ func (reporter *CliReporter) ProduceReport() error {
 	}
 
 	reporter.Period.ForEachDay(func(d time.Time) error {
-		date := d.Format("2006-01-02")
+		date := d.Format(utils.DateFormat)
 		header := fmt.Sprintf("Day %s: \n", date)
 		activityLogs := logs[date]
 

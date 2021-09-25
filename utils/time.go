@@ -6,6 +6,9 @@ import (
 	"time"
 )
 
+// DateFormat is the standard date format used throughout the code.
+const DateFormat = "2006-01-02"
+
 // SecondsToHuman returns a human description of a duration in seconds
 // Taken from: https://www.socketloop.com/tutorials/golang-convert-seconds-to-human-readable-time-format-example
 func SecondsToHuman(input int) (result string) {

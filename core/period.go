@@ -3,6 +3,8 @@ package core
 import (
 	"strings"
 	"time"
+
+	"github.com/luispcosta/go-tt/utils"
 )
 
 // Period represents a time period
@@ -81,11 +83,11 @@ func (period *Period) ForEachDay(fn func(time.Time) error) {
 }
 
 func (period *Period) StartDateDay() string {
-	return period.Sd.Format("2006-01-02")
+	return period.Sd.Format(utils.DateFormat)
 }
 
 func (period *Period) EndDateDay() string {
-	return period.Ed.Format("2006-01-02")
+	return period.Ed.Format(utils.DateFormat)
 }
 
 // AllowedPeriodFixedTimeFrames returns an array of allowed period fixed time frames
@@ -94,7 +96,7 @@ func AllowedPeriodFixedTimeFrames() []string {
 }
 
 func parseSimpleDate(date string) (*time.Time, error) {
-	parsedDate, err := time.Parse("2006-01-02", date)
+	parsedDate, err := time.Parse(utils.DateFormat, date)
 	if err != nil {
 		return nil, err
 	}

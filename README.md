@@ -7,11 +7,11 @@ This is a pet project to quickly track activities and see how much time you spen
 * Golang
 * SQLite3
 
-# Running SQLITE 3 migrations
+# Setting uo SQLITE 3
 
 * Make sure you have `sqlite3` installed.
 * Init the application with `tt init`.
-* From the root folder of this project, run `sqlite3 ~/.gott/gott.db` in your terminal to create a new database called `gott`.
+* From the root folder of this project, run `sqlite3 ~/.gott/gott.db` in your terminal to connect to a sqlite3 shell to the database.
 * Run `.read migrations/001_create_activities.up.sql` inside the `sqlite3` prompt.
 * Run `.read migrations/002_create_activity_logs.up.sql` inside the sqlite3 prompt.
 

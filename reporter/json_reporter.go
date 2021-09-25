@@ -63,7 +63,7 @@ func (reporter *JsonReporter) ProduceReport() error {
 	data := make(jsonData)
 
 	reporter.Period.ForEachDay(func(d time.Time) error {
-		date := d.Format("2006-01-02")
+		date := d.Format(utils.DateFormat)
 		activityLogs := logs[date]
 
 		if len(activityLogs) != 0 {
