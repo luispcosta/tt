@@ -27,3 +27,8 @@ If you need to drop the activity logs table:
 
 To see a list of all the supported commands and how to use them, please run `tt help`. You can also
 run `tt COMMAND --help`
+
+# Installing
+
+Run `./scripts/build.sh`, which should create a file called `tt` in the root of the project.
+For ease of use, move the file `tt` to your executables path (for example `/usr/bin/local`).
