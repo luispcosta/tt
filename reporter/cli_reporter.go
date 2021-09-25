@@ -19,7 +19,7 @@ type CliReporter struct {
 func NewCliReporter() *CliReporter {
 	cliReporter := CliReporter{
 		Printer:        fmt.Print,
-		DurationFormat: core.AutoDurationFormat{},
+		DurationFormat: core.HumanDurationFormat{},
 	}
 	return &cliReporter
 }

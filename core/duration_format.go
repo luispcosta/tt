@@ -1,7 +1,7 @@
 package core
 
 import (
-	"fmt"
+	"strconv"
 
 	"github.com/luispcosta/go-tt/utils"
 )
@@ -12,16 +12,16 @@ type DurationFormat interface {
 }
 
 const (
-	Auto    = "a"
+	Human   = "h"
 	Seconds = "s"
 	Minutes = "m"
-	Hours   = "h"
+	Hours   = "r"
 )
 
 func ParseDurationFormat(f string) DurationFormat {
 	switch f {
-	case Auto:
-		return AutoDurationFormat{}
+	case Human:
+		return HumanDurationFormat{}
 	case Seconds:
 		return SecondsDurationFormat{}
 	case Minutes:
@@ -29,32 +29,30 @@ func ParseDurationFormat(f string) DurationFormat {
 	case Hours:
 		return HoursDurationFormat{}
 	default:
-		return AutoDurationFormat{}
+		return HumanDurationFormat{}
 	}
 }
 
-type AutoDurationFormat struct{}
+type HumanDurationFormat struct{}
 
-func (f AutoDurationFormat) Format(secondsDuration int) string {
+func (f HumanDurationFormat) Format(secondsDuration int) string {
 	return utils.SecondsToHuman(secondsDuration)
 }
 
 type SecondsDurationFormat struct{}
 
 func (f SecondsDurationFormat) Format(secondsDuration int) string {
-	return fmt.Sprintf("%v seconds", secondsDuration)
+	return strconv.Itoa(secondsDuration)
 }
 
 type MinutesDurationFormat struct{}
 
 func (f MinutesDurationFormat) Format(secondsDuration int) string {
-	minutes := secondsDuration / 60
-	return fmt.Sprintf("%v minutes", minutes)
+	return strconv.Itoa(secondsDuration / 60)
 }
 
 type HoursDurationFormat struct{}
 
 func (f HoursDurationFormat) Format(secondsDuration int) string {
-	hours := secondsDuration / 60 / 60
-	return fmt.Sprintf("%v hours", hours)
+	return strconv.Itoa(secondsDuration / 60 / 60)
 }

@@ -34,10 +34,10 @@ func NewReportCommand(activityRepo core.ActivityRepository) *cobra.Command {
 			You can provide an additional flag (-f <FORMAT> or --format <FORMAT>) to specify the report format. The default format is printing
 			the report to STDOUT. Allowed values are: %v
 
-			You can also provide an additional flag (-f <DURATION_FORMAT> or --durationFormat <DURATION_FORMAT>) to specify
+			You can also provide an additional flag (-d <DURATION_FORMAT> or --durationFormat <DURATION_FORMAT>) to specify
 			how each activity duration is printed. The default duration format is 'auto', which prints durations to a human friendly format.
 			Example, an activity duration of 25204 seconds will be printed as "7 hours 0 minute 4 seconds".
-			Accepted values for this flag are 'a' (auto), 's' (seconds), 'm' (minutes) and 'h' (hours).
+			Accepted values for this flag are 'h' (human), 's' (seconds), 'm' (minutes) and 'r' (hours).
 		`, core.AllowedPeriodFixedTimeFrames(), reporter.AllowedFormatsCollection()),
 		Args: cobra.RangeArgs(1, 2),
 		Run: func(cmd *cobra.Command, args []string) {
