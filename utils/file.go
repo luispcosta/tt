@@ -28,6 +28,10 @@ func Move(from, to string) error {
 	return os.Rename(from, to)
 }
 
+func NewFile(fileName string) (*os.File, error) {
+	return os.Create(fileName)
+}
+
 // WriteToFile writes bytes to a file.
 func WriteToFile(fileName string, bytes []byte) error {
 	f, err := os.Create(fileName)

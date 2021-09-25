@@ -13,7 +13,7 @@ const cliFormat = "cli"
 // AllowedFormats creates a map with the allowed report formats and their implementations
 func AllowedFormats() map[string]core.Reporter {
 	allowedFormats := make(map[string]core.Reporter)
-	allowedFormats[csvFormat] = NewEmptyReporter()
+	allowedFormats[csvFormat] = NewCsvReporter()
 	allowedFormats[jsonFormat] = NewJsonReporter()
 	allowedFormats[cliFormat] = NewCliReporter()
 	return allowedFormats
