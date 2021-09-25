@@ -20,7 +20,7 @@ func NewAddCommand(activityRepo core.ActivityRepository) *cobra.Command {
 	addCmd := &cobra.Command{
 		Use:   "add",
 		Short: "Adds a new activity",
-		Long:  "Registers a new activity to be tracked. You can also add an alias to the activity. Case is ignoring for the activity name.",
+		Long:  "Registers a new activity to be tracked. You can also add an alias to the activity. Case is ignored for the activity name.",
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			ExitIfAppNotConfigured()

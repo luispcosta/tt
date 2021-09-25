@@ -1,10 +1,8 @@
 package utils
 
 import (
-	"fmt"
 	"os"
 	"os/user"
-	"path/filepath"
 )
 
 // PathExists returns true whether the path exists or not in the file system
@@ -24,10 +22,7 @@ func CreateDir(path string) error {
 	return err
 }
 
-func Move(from, to string) error {
-	return os.Rename(from, to)
-}
-
+// NewFile creates a new file
 func NewFile(fileName string) (*os.File, error) {
 	return os.Create(fileName)
 }
@@ -35,10 +30,17 @@ func NewFile(fileName string) (*os.File, error) {
 // WriteToFile writes bytes to a file.
 func WriteToFile(fileName string, bytes []byte) error {
 	f, err := os.Create(fileName)
-	defer f.Close()
 	if err != nil {
 		return err
 	}
+	defer func() error {
+		err := f.Close()
+		if err != nil {
+			return err
+		}
+		return nil
+	}()
+
 	_, errorWrite := f.Write(bytes)
 	if errorWrite != nil {
 		return errorWrite
@@ -57,18 +59,7 @@ func HomeDir() string {
 	return usr.HomeDir
 }
 
-// DeleteAtPath tries to delete a file given a path
-func DeleteAtPath(path string) error {
-	return os.Remove(path)
-}
-
 // DeleteDir deletes a directory
 func DeleteDir(path string) error {
 	return os.RemoveAll(path)
-}
-
-// IsExtension checks if a file has the correct extension. It assumes the path exists
-func IsExtension(path, wantedExtension string) bool {
-	ext := filepath.Ext(path)
-	return ext == fmt.Sprintf(".%s", wantedExtension)
 }
